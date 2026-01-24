@@ -1,0 +1,105 @@
+.questions-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    justify-self: center;
+    align-items: center;
+    align-self: center;
+    background-color: #f9f9f9;
+    color: black;
+    border-radius: 8px;
+    padding: 10px;
+}
+form {
+    margin-left: 0%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    justify-self: center;
+}
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f9f9f9;
+    color: #333;
+    justify-content: center;
+}
+h1 {
+    width: 100%;
+    color: #333;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+}
+button {
+    background-color: whitesmoke;
+    color: black;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 600px;
+    margin: 10px 0;
+    border: 1px solid #333;
+}
+button:hover {
+    background-color: rgb(6, 42, 160);
+}
+input[type="text"], textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+label {
+    font-weight: bold;
+    margin-top: 10px;
+}
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.list-item {
+    background-color: #ffffff;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.contact-info {
+    justify-self: center;
+    align-items: center;
+    align-self: center;
+    background-color: #f1f1f1;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    text-align: center;
+}
+footer {
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    background-color: #333;
+    color: white;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+}
+ul {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+    min-height: fit-content;
+    width: 600px;
+}
