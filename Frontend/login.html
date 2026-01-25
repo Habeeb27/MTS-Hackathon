@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pathfinder - Login & Signup</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="https://i.postimg.cc/ry3JjZwG/img.png" />
+    <link rel="stylesheet" href="./login.css" />
+  </head>
+  <body>
+    <div class="floating-circles">
+      <div class="circle-bg circle-1"></div>
+      <div class="circle-bg circle-2"></div>
+      <div class="circle-bg circle-3"></div>
+      <div class="circle-bg circle-4"></div>
+    </div>
+
+    <nav class="navbar">
+      <div class="container nav-container">
+        <a href="./index.html" class="logo">
+          <img
+            src="https://i.postimg.cc/ry3JjZwG/img.png"
+            alt="Pathfinder Logo"
+            class="logo-image"
+          />
+          <div class="logo-text">Pathfinder</div>
+        </a>
+
+        <ul class="nav-links">
+          <li><a href="./index.html">Home</a></li>
+          <li>
+            <button class="theme-toggle" id="themeToggle">
+              <i class="fas fa-moon"></i>
+            </button>
+          </li>
+        </ul>
+
+        <button class="menu-toggle" id="menuToggle">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+
+      <div class="mobile-menu" id="mobileMenu">
+        <ul class="mobile-nav-links">
+          <li><a href="index.html">Home</a></li>
+        </ul>
+        <button class="mobile-theme-toggle" id="mobileThemeToggle">
+          <i class="fas fa-moon"></i> Toggle Theme
+        </button>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <div class="auth-container-wrapper">
+        <div class="auth-container" id="loginForm">
+          <div class="auth-icon-container">
+            <div class="auth-circle">
+              <img
+                src="https://i.postimg.cc/ry3JjZwG/img.png"
+                alt="Login"
+                class="auth-circle-image"
+                id="loginIcon"
+              />
+            </div>
+          </div>
+
+          <h2 class="auth-title">Welcome Back</h2>
+          <p class="auth-subtitle">Sign in to access your Pathfinder account</p>
+
+          <!-- Messages will appear here -->
+          <div id="loginMessage" class="message hidden"></div>
+
+          <form class="auth-form" id="loginFormElement">
+            <div class="form-group">
+              <label for="loginEmail" class="form-label">Email Address</label>
+              <div class="form-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <input
+                type="email"
+                id="loginEmail"
+                class="form-input"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="loginPassword" class="form-label">Password</label>
+              <div class="form-icon">
+                <i class="fas fa-lock"></i>
+              </div>
+              <input
+                type="password"
+                id="loginPassword"
+                class="form-input"
+                placeholder="Enter your password"
+                required
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                id="toggleLoginPassword"
+              >
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+
+            <div class="checkbox-group">
+              <input type="checkbox" id="rememberMe" class="checkbox-input" />
+              <label for="rememberMe" class="checkbox-label">Remember me</label>
+            </div>
+
+            <button type="submit" class="auth-btn">Sign In</button>
+          </form>
+
+          <div class="auth-toggle">
+            Don't have an account? <a href="#" id="showSignup">Sign Up</a>
+          </div>
+
+          <div class="auth-toggle">
+            <a href="#" id="forgotPassword">Forgot your password?</a>
+          </div>
+        </div>
+
+        <div class="auth-container hidden" id="signupForm">
+          <div class="auth-icon-container">
+            <div class="auth-circle">
+              <img
+                src="https://i.postimg.cc/ry3JjZwG/img.png"
+                alt="Sign Up"
+                class="auth-circle-image"
+                id="signupIcon"
+              />
+            </div>
+          </div>
+
+          <h2 class="auth-title">Create Account</h2>
+          <p class="auth-subtitle">
+            Join Pathfinder to start your career journey
+          </p>
+
+          <div id="signupMessage" class="message hidden"></div>
+
+          <form class="auth-form" id="signupFormElement">
+            <div class="form-group">
+              <label for="signupName" class="form-label">Full Name</label>
+              <div class="form-icon">
+                <i class="fas fa-user"></i>
+              </div>
+              <input
+                type="text"
+                id="signupName"
+                class="form-input"
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="signupEmail" class="form-label">Email Address</label>
+              <div class="form-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <input
+                type="email"
+                id="signupEmail"
+                class="form-input"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="signupPassword" class="form-label">Password</label>
+              <div class="form-icon">
+                <i class="fas fa-lock"></i>
+              </div>
+              <input
+                type="password"
+                id="signupPassword"
+                class="form-input"
+                placeholder="Create a password"
+                required
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                id="toggleSignupPassword"
+              >
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+
+            <div class="form-group" id="confirmPasswordGroup">
+              <label for="confirmPassword" class="form-label"
+                >Confirm Password</label
+              >
+              <div class="form-icon">
+                <i class="fas fa-lock"></i>
+              </div>
+              <input
+                type="password"
+                id="confirmPassword"
+                class="form-input"
+                placeholder="Confirm your password"
+                required
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                id="toggleConfirmPassword"
+              >
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+
+            <button type="submit" class="auth-btn">Create Account</button>
+          </form>
+
+          <div class="auth-toggle">
+            Already have an account? <a href="#" id="showLogin">Sign In</a>
+          </div>
+        </div>
+
+        <div class="auth-container hidden" id="forgotPasswordForm">
+          <div class="auth-icon-container">
+            <div class="auth-circle">
+              <img
+                src=""
+                alt="Forgot Password"
+                class="auth-circle-image"
+                id="forgotPasswordIcon"
+              />
+            </div>
+          </div>
+
+          <h2 class="auth-title">Reset Password</h2>
+          <p class="auth-subtitle">Enter your email to reset your password</p>
+
+          <div id="forgotPasswordMessage" class="message hidden"></div>
+
+          <form class="auth-form" id="forgotPasswordFormElement">
+            <div class="form-group">
+              <label for="forgotEmail" class="form-label">Email Address</label>
+              <div class="form-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <input
+                type="email"
+                id="forgotEmail"
+                class="form-control"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+
+            <button type="submit" class="auth-btn">Reset Password</button>
+          </form>
+
+          <div class="auth-toggle">
+            <a href="#" id="showLoginFromForgot">Back to Sign In</a>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="./login.js"></script>
+  </body>
+</html>

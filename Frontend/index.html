@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinder - AI Career Path Advisor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://i.postimg.cc/ry3JjZwG/img.png">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="floating-circles">
+        <div class="circle-bg circle-1"></div>
+        <div class="circle-bg circle-2"></div>
+        <div class="circle-bg circle-3"></div>
+        <div class="circle-bg circle-4"></div>
+    </div>
+    
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <img src="https://i.postimg.cc/ry3JjZwG/img.png" alt="Pathfinder Logo" class="logo-image">
+                <div class="logo-text">Pathfinder</div>
+            </a>
+            
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="./login.html">Login</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li>
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </li>
+            </ul>
+            
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobileMenu">
+            <ul class="mobile-nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="./login.html">Login</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="hero" id="home">
+        <div class="section-circles hero-circles">
+            <div class="section-circle circle-1"></div>
+            <div class="section-circle circle-2"></div>
+            <div class="section-circle circle-3"></div>
+            <div class="section-circle circle-4"></div>
+        </div>
+        
+        <div class="container hero-container">
+            <div class="hero-icon-container">
+                <div class="hero-circle">
+                    <img src="https://i.postimg.cc/ry3JjZwG/img.png" alt="Pathfinder AI Icon" class="hero-circle-image">
+                </div>
+            </div>
+            
+            <h1 class="hero-title">Find Your Path <span>Build Your Future</span></h1>
+            
+            <p class="hero-description">
+                Pathfinder uses AI to help users discover career paths that fit their interests, personality, and values
+            </p>
+            
+            <div class="btn-center">
+                <a href="./login.html" class="btn">Start Assessment</a>
+            </div>
+            <div class="cards-container">
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3 class="card-title">Academic Clarity</h3>
+                    <p class="card-description">Get personalized guidance on courses, majors, and academic paths that align with your strengths and career goals.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <h3 class="card-title">Financial Balance</h3>
+                    <p class="card-description">Discover ways to generate income while studying, without compromising your academic performance.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <h3 class="card-title">Purpose-Driven Growth</h3>
+                    <p class="card-description">Build a career path that aligns with your values, passions, and long-term aspirations.</p>
+                </div>
+            </div>
+            
+            
+        </div>
+    </section>
+
+    <section class="section" id="challenges" style="background-color: var(--off-white);">
+        <div class="section-circles challenges-circles">
+            <div class="section-circle circle-1"></div>
+            <div class="section-circle circle-2"></div>
+            <div class="section-circle circle-3"></div>
+            <div class="section-circle circle-4"></div>
+        </div>
+        
+        <div class="container">
+            <h2 class="section-title">How Pathfinder Solves Career Challenges</h2>
+            
+            <div class="challenges-container">
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h3 class="card-title">Uncertain Career Direction</h3>
+                    <p class="card-description">Pathfinder analyzes your skills and interests to suggest suitable career paths.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3 class="card-title">Time Management</h3>
+                    <p class="card-description">AI helps create balanced schedules for both study and income-generating activities.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <h3 class="card-title">Financial Pressure</h3>
+                    <p class="card-description">Identifies part-time opportunities and side hustles compatible with your studies.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="card-title">Skill Gap</h3>
+                    <p class="card-description">Recommends courses and skills to develop for your chosen career path.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                    <h3 class="card-title">Limited Networks</h3>
+                    <p class="card-description">Connects you with mentors and professionals in your field of interest.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-burn"></i>
+                    </div>
+                    <h3 class="card-title">Burnout Risk</h3>
+                    <p class="card-description">Monitors workload and suggests adjustments to prevent exhaustion.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-road"></i>
+                    </div>
+                    <h3 class="card-title">Unclear Roadmap</h3>
+                    <p class="card-description">Provides step-by-step guidance from student to professional.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <h3 class="card-title">Lack of Confidence</h3>
+                    <p class="card-description">Builds confidence through achievable milestones and progress tracking.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="contact">
+        <div class="section-circles contact-circles">
+            <div class="section-circle circle-1"></div>
+            <div class="section-circle circle-2"></div>
+            <div class="section-circle circle-3"></div>
+            <div class="section-circle circle-4"></div>
+        </div>
+        
+        <div class="container">
+            <div class="contact-form">
+                <h2 class="form-title">Start Your Journey Today</h2>
+                <p style="text-align: center; margin-bottom: 30px; color: var(--text-light);">
+                    Let's discuss how Pathfinder can help you balance academics and income generation.
+                </p>
+                
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" class="form-control" placeholder="Enter your name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" class="form-control" placeholder="Enter your phone number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Your Message</label>
+                        <textarea id="message" class="form-control" placeholder="Tell us about your academic and career goals..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn" style="width: 100%;">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-animation">
+            <div class="circle-footer"></div>
+            <div class="circle-footer"></div>
+            <div class="circle-footer"></div>
+        </div>
+        
+        <div class="container footer-container">
+            <div class="footer-logo">
+                <img src="https://i.postimg.cc/ry3JjZwG/img.png" alt="Pathfinder Logo" class="footer-logo-image">
+                Pathfinder AI
+            </div>
+            
+            <p class="footer-description">
+                Pathfinder helps students and young professionals achieve academic and financial balance through AI-powered career guidance. Developed for the Muslim Hackathon.
+            </p>
+            
+            <div class="social-icons">
+                <a href="#" class="social-icon">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="#" class="social-icon">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+                <a href="#" class="social-icon">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="#" class="social-icon">
+                    <i class="fab fa-github"></i>
+                </a>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2026 Pathfinder AI Career Advisor. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="./app.js"></script>
+</body>
+</html>
