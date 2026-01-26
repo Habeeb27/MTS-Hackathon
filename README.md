@@ -1,1 +1,7 @@
 # MTS-Hackathon
+
+Pathfinder is an AI-powered career guidance platform designed to help individuals make informed and confident career decisions. Many students and graduates struggle to choose career paths due to limited exposure, generic advice, and lack of personalized guidance. Pathfinder addresses this gap by analyzing users’ hobbies, personality traits, interests, likes, and dislikes to recommend suitable career paths tailored to each individual.
+
+Users sign up and access a dashboard where they can take a structured career assessment, chat with an AI assistant about career-related challenges, and receive personalized career roadmaps outlining relevant skills, learning resources, and next steps. Pathfinder also allows users to save recommended roadmaps and connect with others with similar career interests for discussion and support.
+
+The platform targets high school students, university students, graduates, and career switchers. For high school users, Pathfinder additionally recommends suitable courses of study to simplify future career navigation. Built with a lightweight full-stack architecture and AI integration, Pathfinder aims to make career guidance accessible, personalized, and actionable for everyone
