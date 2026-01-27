@@ -60,14 +60,14 @@
 
     <main class="main-content">
       <div class="auth-container-wrapper">
-        <div class="auth-container" id="loginForm">
+        <!-- Login Form -->
+        <div class="auth-container active" id="loginFormContainer">
           <div class="auth-icon-container">
             <div class="auth-circle">
               <img
                 src="https://i.postimg.cc/ry3JjZwG/img.png"
                 alt="Login"
                 class="auth-circle-image"
-                id="loginIcon"
               />
             </div>
           </div>
@@ -75,8 +75,7 @@
           <h2 class="auth-title">Welcome Back</h2>
           <p class="auth-subtitle">Sign in to access your Pathfinder account</p>
 
-          <!-- Messages will appear here -->
-          <div id="loginMessage" class="message hidden"></div>
+          <div id="loginMessage" class="message"></div>
 
           <form class="auth-form" id="loginFormElement">
             <div class="form-group">
@@ -131,14 +130,14 @@
           </div>
         </div>
 
-        <div class="auth-container hidden" id="signupForm">
+        <!-- Signup Form -->
+        <div class="auth-container" id="signupFormContainer">
           <div class="auth-icon-container">
             <div class="auth-circle">
               <img
                 src="https://i.postimg.cc/ry3JjZwG/img.png"
                 alt="Sign Up"
                 class="auth-circle-image"
-                id="signupIcon"
               />
             </div>
           </div>
@@ -148,7 +147,7 @@
             Join Pathfinder to start your career journey
           </p>
 
-          <div id="signupMessage" class="message hidden"></div>
+          <div id="signupMessage" class="message"></div>
 
           <form class="auth-form" id="signupFormElement">
             <div class="form-group">
@@ -212,7 +211,6 @@
                 id="confirmPassword"
                 class="form-input"
                 placeholder="Confirm your password"
-                required
               />
               <button
                 type="button"
@@ -231,14 +229,14 @@
           </div>
         </div>
 
-        <div class="auth-container hidden" id="forgotPasswordForm">
+        <!-- Forgot Password Form -->
+        <div class="auth-container" id="forgotPasswordFormContainer">
           <div class="auth-icon-container">
             <div class="auth-circle">
               <img
-                src=""
+                src="https://i.postimg.cc/ry3JjZwG/img.png"
                 alt="Forgot Password"
                 class="auth-circle-image"
-                id="forgotPasswordIcon"
               />
             </div>
           </div>
@@ -246,7 +244,7 @@
           <h2 class="auth-title">Reset Password</h2>
           <p class="auth-subtitle">Enter your email to reset your password</p>
 
-          <div id="forgotPasswordMessage" class="message hidden"></div>
+          <div id="forgotPasswordMessage" class="message"></div>
 
           <form class="auth-form" id="forgotPasswordFormElement">
             <div class="form-group">
@@ -257,7 +255,7 @@
               <input
                 type="email"
                 id="forgotEmail"
-                class="form-control"
+                class="form-input"
                 placeholder="Enter your email"
                 required
               />
@@ -272,7 +270,6 @@
         </div>
       </div>
     </main>
-    
-    
+    <script src="{{ url_for('static', filename='login.js') }}"></script>
   </body>
 </html>
