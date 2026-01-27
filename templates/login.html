@@ -13,7 +13,7 @@
       rel="stylesheet"
     />
     <link rel="icon" href="https://i.postimg.cc/ry3JjZwG/img.png" />
-    <link rel="stylesheet" href="./login.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
   </head>
   <body>
     <div class="floating-circles">
@@ -272,6 +272,7 @@
         </div>
       </div>
     </main>
-    <script src="./login.js"></script>
+    
+    
   </body>
 </html>
