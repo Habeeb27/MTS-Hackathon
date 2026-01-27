@@ -920,7 +920,7 @@ textarea.form-control {
         font-size: 18px;
     }
 }
-/* Chatbot Section */
+/* ===================== Chatbot Section ===================== */
 #quick-chatbot {
     position: relative;
     padding: 80px 20px;
@@ -929,6 +929,7 @@ textarea.form-control {
     max-width: 700px;
     margin: 0 auto 80px auto;
     box-shadow: 0 15px 30px var(--shadow);
+    transition: var(--transition);
 }
 
 #chatbot-container {
@@ -951,7 +952,7 @@ textarea.form-control {
     box-shadow: 0 10px 25px rgba(0,0,0,0.25);
 }
 
-/* Chat Messages */
+/* ===================== Chat Messages ===================== */
 .chat-message {
     display: flex;
     flex-direction: column;
@@ -982,52 +983,53 @@ textarea.form-control {
     transition: var(--transition);
 }
 
-/* User Options Buttons */
+/* ===================== User Options - Play Store Style ===================== */
 .user-options {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 8px;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 15px;
 }
 
 .user-options button {
-    padding: 10px 18px;
+    padding: 12px 25px;
     border: none;
-    border-radius: 12px;
-    background-color: var(--accent-blue);
-    color: var(--white);
+    border-radius: 50px;
+    background: linear-gradient(135deg, #3949ab, #5c6bc0);
+    color: #ffffff;
     font-weight: 500;
+    font-size: 0.95rem;
     cursor: pointer;
-    transition: var(--transition);
-    box-shadow: 0 5px 15px rgba(26,35,126,0.1);
+    transition: all 0.3s ease;
+    min-width: 160px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(26,35,126,0.15);
+    white-space: nowrap;
 }
 
 .user-options button:hover {
-    background-color: var(--primary-blue);
-    transform: translateY(-2px);
-}
-
-/* Teaser / Learn More Button */
-#chatbox .btn {
-    background: linear-gradient(to right, var(--primary-blue), var(--accent-blue));
-    color: var(--white);
-    border-radius: 12px;
-    padding: 12px 25px;
-    font-size: 1rem;
-    font-weight: 600;
-    margin-top: 10px;
-    text-align: center;
-    display: inline-block;
-    text-decoration: none;
-    box-shadow: 0 8px 20px rgba(26,35,126,0.2);
-}
-
-#chatbox .btn:hover {
+    background: linear-gradient(135deg, #5c6bc0, #3949ab);
     transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(26,35,126,0.3);
+    box-shadow: 0 8px 20px rgba(26,35,126,0.3);
 }
 
-/* Scrollbar Styling */
+.user-options button:active {
+    transform: translateY(1px);
+    box-shadow: 0 4px 10px rgba(26,35,126,0.2);
+}
+
+/* Dark Theme */
+.dark-theme .user-options button {
+    background: linear-gradient(135deg, #283593, #3949ab);
+    color: #ffffff;
+}
+
+.dark-theme .user-options button:hover {
+    background: linear-gradient(135deg, #3949ab, #5c6bc0);
+}
+
+/* ===================== Scrollbar ===================== */
 #chatbot-container::-webkit-scrollbar {
     width: 8px;
 }
@@ -1041,20 +1043,21 @@ textarea.form-control {
     background-color: var(--off-white);
 }
 
-/* Responsive Chatbox */
+/* ===================== Responsive ===================== */
 @media (max-width: 768px) {
     #chatbot-container {
         max-height: 400px;
         padding: 15px;
     }
-    
+
     .chatbot, .user {
         font-size: 0.95rem;
         padding: 10px 14px;
     }
 
     .user-options button {
-        padding: 8px 12px;
+        min-width: 130px;
+        padding: 10px 20px;
         font-size: 0.9rem;
     }
 }
@@ -1067,47 +1070,40 @@ textarea.form-control {
     #chatbot-container {
         max-height: 350px;
     }
+
+    .user-options {
+        gap: 8px;
+    }
+
+    .user-options button {
+        min-width: 100px;
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
 }
-/* Navbar links */
-.nav-links li a {
-    text-decoration: none;           /* Remove underline */
-    color: var(--text-dark);         /* Default dark text */
-    font-weight: 500;
-    font-size: 16px;
-    padding: 10px 15px;              /* Clickable space */
-    border-radius: 8px;              /* Rounded corners */
+
+/* ===================== CTA Button ===================== */
+.chat-cta-btn {
+    display: inline-block;
+    background: linear-gradient(to right, var(--primary-blue), var(--accent-blue));
+    color: var(--white);
+    border-radius: 12px;
+    padding: 12px 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 10px;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0 8px 20px rgba(26,35,126,0.2);
     transition: var(--transition);
-    position: relative;
 }
 
-/* Hover effect */
-.nav-links li a:hover {
-    color: var(--white);
-    background: linear-gradient(to right, var(--primary-blue), var(--accent-blue));
-    transform: translateY(-2px);    /* Slight lift */
-    box-shadow: 0 4px 12px var(--shadow);
+.chat-cta-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(26,35,126,0.3);
 }
 
-/* Active page highlight */
-.nav-links li a.active {
-    color: var(--white);
-    background: linear-gradient(to right, var(--primary-blue), var(--accent-blue));
-    box-shadow: 0 4px 12px var(--shadow);
-}
 
-/* Dark theme adjustments */
-.dark-theme .nav-links li a {
-    color: #ffffff;
-}
 
-.dark-theme .nav-links li a:hover {
-    background: linear-gradient(to right, var(--medium-blue), var(--light-blue));
-    color: #ffffff;
-}
-
-.dark-theme .nav-links li a.active {
-    background: linear-gradient(to right, var(--medium-blue), var(--light-blue));
-    color: #ffffff;
-}
 
 

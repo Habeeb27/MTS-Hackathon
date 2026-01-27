@@ -136,98 +136,111 @@ function setImageSources(logoPath, heroIconPath, footerLogoPath) {
     footerLogo.src = footerLogoPath;
   }
 }
-const questions = [
+document.addEventListener("DOMContentLoaded", () => {
+  const chatbox = document.getElementById("chatbox");
+  if (!chatbox) return;
+
+  const questions = [
     {
-        key: "interest",
-        text: "What do you enjoy doing the most?",
-        options: [
-            "Solving problems / logic",
-            "Creating or designing things",
-            "Working with data or numbers",
-            "Communicating / leading people"
-        ]
+      key: "interest",
+      text: "👋 Hi! Let’s start. What do you enjoy doing the most?",
+      options: [
+        "Solving problems / logic",
+        "Creating or designing things",
+        "Working with data or numbers",
+        "Communicating / leading people"
+      ]
     },
     {
-        key: "stage",
-        text: "Where are you right now in your journey?",
-        options: ["Student","Graduate","Working professional","Career switcher"]
+      key: "stage",
+      text: "Where are you right now in your journey?",
+      options: ["Student", "Graduate", "Working professional", "Career switcher"]
     },
     {
-        key: "goal",
-        text: "What do you want most from your career?",
-        options: ["High income","Stability","Flexibility / remote work","Impact & creativity"]
+      key: "goal",
+      text: "What do you want most from your career?",
+      options: ["High income", "Stability", "Flexibility / remote work", "Impact & creativity"]
     },
     {
-        key: "effort",
-        text: "How much time can you realistically commit weekly?",
-        options: ["Less than 5 hours","5–10 hours","10–20 hours","20+ hours"]
+      key: "effort",
+      text: "How much time can you realistically commit weekly?",
+      options: ["Less than 5 hours", "5–10 hours", "10–20 hours", "20+ hours"]
     }
-];
+  ];
 
-const chatbox = document.getElementById("chatbox");
-let currentQuestion = 0;
-let answers = {};
+  let currentQuestion = 0;
+  let answers = {};
 
-function addMessage(text, sender = "chatbot") {
-    const msgDiv = document.createElement("div");
-    msgDiv.classList.add("chat-message", sender);
-    msgDiv.innerHTML = `<div class="${sender}">${text}</div>`;
-    chatbox.appendChild(msgDiv);
+  function addMessage(text, sender = "bot") {
+    const msg = document.createElement("div");
+    msg.className = `chat-message ${sender}`;
+    msg.textContent = text;
+    chatbox.appendChild(msg);
     chatbox.scrollTop = chatbox.scrollHeight;
-}
+  }
 
-function showOptions(options, key) {
+  function showOptions(options, key) {
     const optionsDiv = document.createElement("div");
-    optionsDiv.classList.add("user-options");
-    options.forEach(opt => {
-        const btn = document.createElement("button");
-        btn.textContent = opt;
-        btn.addEventListener("click", () => {
-            answers[key] = opt;
-            optionsDiv.remove();
-            addMessage(opt, "user");
-            currentQuestion++;
-            if(currentQuestion < questions.length){
-                setTimeout(() => askQuestion(currentQuestion), 300);
-            } else {
-                showTeaser();
-            }
-        });
-        optionsDiv.appendChild(btn);
+    optionsDiv.className = "user-options"; // ✅ match CSS
+
+    options.forEach(option => {
+      const btn = document.createElement("button");
+      btn.textContent = option;
+
+      btn.onclick = () => {
+        answers[key] = option;
+        optionsDiv.remove();
+        addMessage(option, "user");
+        currentQuestion++;
+
+        if (currentQuestion < questions.length) {
+          setTimeout(askQuestion, 400);
+        } else {
+          setTimeout(showTeaser, 600);
+        }
+      };
+
+      optionsDiv.appendChild(btn);
     });
+
     chatbox.appendChild(optionsDiv);
     chatbox.scrollTop = chatbox.scrollHeight;
-}
+  }
 
-function askQuestion(index) {
-    const q = questions[index];
-    addMessage(q.text);
+  function askQuestion() {
+    const q = questions[currentQuestion];
+    addMessage(q.text, "bot");
     showOptions(q.options, q.key);
-}
+  }
 
-async function showTeaser() {
-    addMessage("Analyzing your answers... 🔍");
+  async function showTeaser() {
+    addMessage("🔍 Analyzing your responses...");
+
     try {
-        const response = await fetch("/chatbot", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(answers)
-        });
-        const data = await response.json();
-        addMessage(data.teaser || "Great! You're ready to explore your career path.");
-        // Add Learn More button
-        const learnMore = document.createElement("a");
-        learnMore.href = "./login.html";
-        learnMore.textContent = "Learn More";
-        learnMore.className = "btn";
-        learnMore.style.display = "inline-block";
-        learnMore.style.marginTop = "10px";
-        chatbox.appendChild(learnMore);
-        chatbox.scrollTop = chatbox.scrollHeight;
-    } catch(err) {
-        addMessage("Oops! Something went wrong. Please try again later.");
-    }
-}
+      const res = await fetch("/chatbot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(answers)
+      });
 
-// Start the chatbot
-askQuestion(0);
+      const data = await res.json();
+
+      addMessage("🧭 Career Preview", "bot");
+      addMessage(data.teaser, "bot");
+
+      const cta = document.createElement("a");
+      cta.href = "/login";
+      cta.className = "chat-cta-btn";
+      cta.textContent = "🔐 Learn more → Create an account";
+
+      chatbox.appendChild(cta);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    } catch {
+      addMessage("⚠️ Something went wrong. Try again later.", "bot");
+    }
+  }
+
+  // 🚀 START CHAT
+  askQuestion();
+});
+
