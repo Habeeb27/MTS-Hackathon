@@ -1,4 +1,4 @@
-        :root {
+            :root {
         --primary-blue: #1a237e;
         --dark-blue: #0d1440;
         --medium-blue: #283593;
@@ -671,6 +671,79 @@
         border: 1px solid rgba(244, 67, 54, 0.2);
       }
 
+      /* Verification code input styles */
+      .verification-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 20px 0;
+      }
+
+      .verification-input {
+        width: 60px;
+        height: 60px;
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        border: 2px solid var(--light-gray);
+        border-radius: 8px;
+        background-color: var(--white);
+        color: var(--text-dark);
+        transition: var(--transition);
+      }
+
+      .dark-theme .verification-input {
+        background-color: var(--light-gray);
+        color: #ffffff;
+        border-color: var(--medium-blue);
+      }
+
+      .verification-input:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.1);
+      }
+
+      .dark-theme .verification-input:focus {
+        border-color: var(--light-blue);
+        box-shadow: 0 0 0 3px rgba(92, 107, 192, 0.2);
+      }
+
+      .verification-input.filled {
+        border-color: var(--accent-blue);
+      }
+
+      .resend-code {
+        text-align: center;
+        margin-top: 15px;
+        color: var(--text-light);
+        font-size: 14px;
+      }
+
+      .resend-code a {
+        color: var(--accent-blue);
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .resend-code a:hover {
+        text-decoration: underline;
+      }
+
+      .dark-theme .resend-code a {
+        color: var(--light-blue);
+      }
+
+      .resend-code.disabled {
+        opacity: 0.6;
+      }
+
+      .resend-code.disabled a {
+        pointer-events: none;
+        color: var(--text-light);
+      }
+
       @media (max-width: 768px) {
         .nav-links {
           display: none;
@@ -697,6 +770,12 @@
         .main-content {
           padding-top: 140px;
           padding-bottom: 30px;
+        }
+
+        .verification-input {
+          width: 50px;
+          height: 50px;
+          font-size: 20px;
         }
       }
 
@@ -726,6 +805,16 @@
         .main-content {
           padding-top: 130px;
           padding-bottom: 20px;
+        }
+
+        .verification-container {
+          gap: 8px;
+        }
+
+        .verification-input {
+          width: 45px;
+          height: 45px;
+          font-size: 18px;
         }
       }
 
