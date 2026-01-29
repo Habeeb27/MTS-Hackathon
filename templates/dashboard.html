@@ -1,59 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="dashboard.css">
-    <title>Career Advisor</title>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pathfinder - User Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="https://i.postimg.cc/ry3JjZwG/img.png" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
+  </head>
 
-   <h1>Welcome username</h1>
-   <br>
-      <p>Here are some common career-related questions you might have:</p>
-    <section id="career-questions">
-        <div class="questions-list">
-        <ul>
-        <button><li>What questions do you have about your career path?</li></button>
-        <br>
-        <button><li>Do you need guidance on choosing a career?</li></button>
-        <br>
-        <button><li>Are you looking for advice on career advancement?</li></button>
-        <br>
-        <button><li>Would you like tips on work-life balance?</li></button>
-        <br>
-        <button><li>Are you interested in learning about new career opportunities?</li></button>
-        <br>
-        <button><li>Looking for innovative ideas in your field?</li></button>
-        <br>
-        <button><li>Need help with resume building or interview preparation?</li></button>
-        <br>
-        <button><li>Seeking mentorship or networking advice?</li></button>
-        <br>
-        <button><li>Want to explore further education or certifications?</li></button>
+  <body>
+    <div class="floating-circles">
+      <div class="circle-bg circle-1"></div>
+      <div class="circle-bg circle-2"></div>
+      <div class="circle-bg circle-3"></div>
+      <div class="circle-bg circle-4"></div>
+    </div>
+
+    <div class="dashboard-circles">
+      <div class="dashboard-circle"></div>
+      <div class="dashboard-circle"></div>
+      <div class="dashboard-circle"></div>
+      <div class="dashboard-circle"></div>
+    </div>
+
+    <nav class="navbar">
+      <div class="container nav-container">
+        <a href="./index.html" class="logo">
+          <img
+            src="https://i.postimg.cc/ry3JjZwG/img.png"
+            alt="Pathfinder Logo"
+            class="logo-image"
+          />
+          <div class="logo-text">Pathfinder</div>
+        </a>
+
+        <ul class="nav-links">
+          <li><a href="./index.html">Home</a></li>
+          <li>
+            <a href="#" class="active"><i class="fas fa-user"></i> Dashboard</a>
+          </li>
+          <li class="profile-container">
+            <button class="profile-btn" id="profileBtn">
+              <i class="fas fa-user-circle"></i>
+              <span>Profile</span>
+            </button>
+            <div class="profile-dropdown" id="profileDropdown">
+              <div class="profile-header">
+                <div class="profile-name" id="profileName">User Name</div>
+                <div class="profile-email" id="profileEmail">
+                  user@example.com
+                </div>
+              </div>
+              <div class="profile-details" id="profileDetails">
+                <!-- Teslim add a function to show the user details here-->
+              </div>
+              <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+              </button>
+            </div>
+          </li>
+          <li>
+            <button class="theme-toggle" id="themeToggle">
+              <i class="fas fa-moon"></i>
+            </button>
+          </li>
         </ul>
-        </div>
-    </section>
-    <br>
-        <form action="#" method="dialog">
-            <label for="question">Ask For Career Tips:</label><br>
-            <textarea id="question" name="question" rows="10" cols="80" placeholder="Input your career-questions"></textarea><br><br>
-            <input type="submit" value="Submit">
-        </form>
-        <br><br><br>
-        <div class="contact-info">
-            <p>Subscribe to our newsletter for the latest career tips!</p>
-            <input type="email" placeholder="Enter your email">
-            <button type="submit" style="width: 100px; height: fit-content; padding: auto; border-radius: 10px;">Subscribe</button>
-            <br><br>
-            <h3>Contact Information</h3>
-            <p>Email: careeradvisor@example.com</p>
-        </div>
-        <fencedframeset>
-            <footer>
-                <p>&copy; 2024 Career Advisor. All rights reserved.</p>
-            </footer>
-        </fencedframeset>
-</body>
+      </div>
+    </nav>
 
+    <nav class="chat-navbar" id="chatNavbar">
+      <div class="container chat-nav-container">
+        <a href="#" class="logo">
+          <img
+            src="https://i.postimg.cc/ry3JjZwG/img.png"
+            alt="Pathfinder Logo"
+            class="logo-image"
+          />
+          <div class="logo-text">Pathfinder AI</div>
+        </a>
+
+        <div class="chat-nav-controls">
+          <button class="history-btn" id="historyBtn">
+            <i class="fas fa-history"></i>
+          </button>
+          <button class="back-btn" id="backToDashboard">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Dashboard</span>
+          </button>
+          <button class="theme-toggle" id="chatThemeToggle">
+            <i class="fas fa-moon"></i>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h3 class="sidebar-title">
+          <i class="fas fa-history"></i> Chat History
+        </h3>
+        <button class="close-sidebar" id="closeSidebar">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="chat-history" id="chatHistory">
+        <div class="chat-history-item">
+          <div class="chat-history-date">Today, 10:30 AM</div>
+          Career path discussion
+        </div>
+        <div class="chat-history-item">
+          <div class="chat-history-date">Yesterday, 3:45 PM</div>
+          Academic guidance session
+        </div>
+        <div class="chat-history-item">
+          <div class="chat-history-date">Oct 15, 2024</div>
+          Financial planning advice
+        </div>
+      </div>
+    </div>
+
+    <div class="questionnaire-overlay" id="questionnaireOverlay">
+      <div class="questionnaire-container" id="questionnaireContainer">
+      </div>
+    </div>
+
+    <div class="dashboard-container" id="dashboardContainer">
+      <div class="dashboard-center">
+        <div class="logo-center">
+          <img
+            src="https://i.postimg.cc/ry3JjZwG/img.png"
+            alt="Pathfinder Logo"
+          />
+        </div>
+
+        <div class="welcome-message" id="welcomeMessage">
+          <h2 class="welcome-text" id="welcomeText">Welcome to Pathfinder!</h2>
+          <p class="sub-welcome">Your AI Career Advisor</p>
+        </div>
+
+        <!-- 2 Cards Grid -->
+        <div class="cards-grid">
+          <div class="simple-card">
+            <div class="card-icon">
+              <i class="fas fa-robot"></i>
+            </div>
+            <h3 class="card-title">AI Career Assistant</h3>
+            <p class="card-description">
+              Get personalized career guidance from our AI assistant. Discuss
+              your goals, get recommendations, and plan your path to success.
+            </p>
+          </div>
+
+          <div class="simple-card">
+            <div class="card-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="card-title">Progress Tracking</h3>
+            <p class="card-description">
+              Track your career development progress, set milestones, and
+              monitor your growth over time with detailed analytics.
+            </p>
+          </div>
+        </div>
+
+        <div class="ai-input-pane" id="aiInputPane">
+          <div class="pane-header">
+            <h3 class="pane-title">Ask Pathfinder AI</h3>
+            <p class="pane-subtitle">
+              Click on a question below or type your own
+            </p>
+          </div>
+
+          <div class="demo-prompts" id="demoPrompts">
+          </div>
+
+          <div class="input-wrapper">
+            <input
+              type="text"
+              class="ai-input"
+              id="aiInput"
+              placeholder="Type your career question here..."
+            />
+            <button class="input-btn" id="inputBtn">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-page" id="chatPage">
+      <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+          <div class="message ai">
+            Hello! I'm your Pathfinder AI assistant. How can I help you with
+            your career journey today?
+            <div class="message-time">Just now</div>
+          </div>
+        </div>
+
+        <div class="chat-input-container">
+          <div class="chat-input-wrapper">
+            <div class="chat-input-icon">
+              <i class="fas fa-comment-dots"></i>
+            </div>
+            <input
+              type="text"
+              class="chat-input"
+              id="chatInput"
+              placeholder="Type your message here..."
+            />
+            <button class="chat-send-btn" id="chatSendBtn">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

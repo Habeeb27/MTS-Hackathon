@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -35,7 +35,7 @@
         </a>
 
         <ul class="nav-links">
-          <li><a href="./index.html">Home</a></li>
+          <li><a href="{{ url_for('home') }}">Home</a></li>
           <li>
             <button class="theme-toggle" id="themeToggle">
               <i class="fas fa-moon"></i>
@@ -226,6 +226,51 @@
 
           <div class="auth-toggle">
             Already have an account? <a href="#" id="showLogin">Sign In</a>
+          </div>
+        </div>
+
+        <!-- Verification Form -->
+        <div class="auth-container" id="verificationFormContainer">
+          <div class="auth-icon-container">
+            <div class="auth-circle">
+              <img
+                src="https://i.postimg.cc/ry3JjZwG/img.png"
+                alt="Verify Email"
+                class="auth-circle-image"
+              />
+            </div>
+          </div>
+
+          <h2 class="auth-title">Verify Your Email</h2>
+          <p class="auth-subtitle">
+            We've sent a verification code to <span id="verificationEmail"></span>
+          </p>
+          <p class="auth-subtitle" style="font-size: 13px; margin-top: -15px;">
+            Please check your inbox and enter the code below
+          </p>
+
+          <div id="verificationMessage" class="message"></div>
+
+          <form class="auth-form" id="verificationFormElement">
+            <div class="verification-container">
+              <input type="text" maxlength="1" class="verification-input" id="digit1" data-index="0" />
+              <input type="text" maxlength="1" class="verification-input" id="digit2" data-index="1" />
+              <input type="text" maxlength="1" class="verification-input" id="digit3" data-index="2" />
+              <input type="text" maxlength="1" class="verification-input" id="digit4" data-index="3" />
+              <input type="text" maxlength="1" class="verification-input" id="digit5" data-index="4" />
+              <input type="text" maxlength="1" class="verification-input" id="digit6" data-index="5" />
+            </div>
+
+            <div class="resend-code" id="resendCodeContainer">
+              <span id="countdownText">Resend code in <span id="countdown">60</span> seconds</span>
+              <a href="#" id="resendCode" style="display: none;">Resend code</a>
+            </div>
+
+            <button type="submit" class="auth-btn">Verify Email</button>
+          </form>
+
+          <div class="auth-toggle">
+            <a href="#" id="showLoginFromVerify">Back to Sign In</a>
           </div>
         </div>
 
