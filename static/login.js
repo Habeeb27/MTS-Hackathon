@@ -170,11 +170,10 @@ function generateVerificationCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-function sendVerificationEmail(email, code) {
-  console.log(`Verification email sent to ${email}`);
-  console.log(`Verification code: ${code}`);
-  // In a real app, you would send an actual email here
-  return Promise.resolve({ success: true });
+async function sendVerificationEmail(email, code) {
+  // This function is no longer needed - the backend handles email sending
+  // Keeping it for compatibility but it should not be called
+  console.log('Email sending handled by backend');
 }
 
 function startResendCountdown(seconds = 60) {
@@ -361,15 +360,28 @@ resendCodeBtn.addEventListener("click", async (e) => {
   submitBtn.disabled = true;
 
   try {
-    verificationCode = generateVerificationCode();
+    const response = await fetch('/resend-code', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: pendingVerificationUser.email
+      })
+    });
 
-    await sendVerificationEmail(
-      pendingVerificationUser.email,
-      verificationCode,
-    );
+    const data = await response.json();
 
-    showMessage(verificationMessage, "New verification code sent!", "success");
-    startResendCountdown(60);
+    if (response.ok) {
+      showMessage(verificationMessage, "New verification code sent!", "success");
+      startResendCountdown(60);
+    } else {
+      showMessage(
+        verificationMessage,
+        data.message || "Failed to resend code. Please try again.",
+        "error",
+      );
+    }
 
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
@@ -407,27 +419,31 @@ loginFormElement.addEventListener("submit", async (e) => {
   submitBtn.disabled = true;
 
   try {
-    const result = await simulateApiCall(
-      { email, password, rememberMe },
-      "login",
-    );
+    const response = await fetch('/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        loginEmail: email,
+        loginPassword: password
+      })
+    });
 
-    if (result.success) {
-      showMessage(loginMessage, result.message, "success");
+    const data = await response.json();
+
+    if (response.ok) {
+      showMessage(loginMessage, data.message, "success");
 
       setTimeout(() => {
-        alert(
-          `Welcome back! Login successful.\n\nEmail: ${email}\nRemember me: ${
-            rememberMe ? "Yes" : "No"
-          }`,
-        );
+        // Redirect to dashboard on successful login
+        window.location.href = '/dashboard';
 
-        loginFormElement.reset();
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
       }, 1000);
     } else {
-      showMessage(loginMessage, result.message, "error");
+      showMessage(loginMessage, data.message, "error");
       submitBtn.textContent = originalText;
       submitBtn.disabled = false;
     }
@@ -479,27 +495,42 @@ signupFormElement.addEventListener("submit", async (e) => {
   submitBtn.disabled = true;
 
   try {
-    // Store user data for verification
-    pendingVerificationUser = { name, email, password };
+    // Call backend signup endpoint
+    const response = await fetch('/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        signupName: name,
+        signupEmail: email,
+        signupPassword: password
+      })
+    });
 
-    verificationCode = generateVerificationCode();
+    const data = await response.json();
 
-    await sendVerificationEmail(email, verificationCode);
+    if (response.ok) {
+      // Store user data for verification process
+      pendingVerificationUser = { name, email, password };
 
-    verificationEmailSpan.textContent = email;
-    showForm(verificationFormContainer);
+      verificationEmailSpan.textContent = email;
+      showForm(verificationFormContainer);
 
-    startResendCountdown(60);
+      startResendCountdown(60);
+
+      signupFormElement.reset();
+      confirmPasswordGroup.classList.remove("visible");
+    } else {
+      showMessage(signupMessage, data.message || "Failed to create account", "error");
+    }
 
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
-
-    signupFormElement.reset();
-    confirmPasswordGroup.classList.remove("visible");
   } catch (error) {
     showMessage(
       signupMessage,
-      "Failed to send verification email. Please try again.",
+      "An error occurred. Please try again.",
       "error",
     );
     submitBtn.textContent = originalText;
@@ -517,21 +548,26 @@ verificationFormElement.addEventListener("submit", async (e) => {
     return;
   }
 
-  if (enteredCode !== verificationCode) {
-    showMessage(verificationMessage, "Invalid verification code", "error");
-    verificationInputs.forEach((input) => input.classList.add("error"));
-    return;
-  }
-
   const submitBtn = verificationFormElement.querySelector(".auth-btn");
   const originalText = submitBtn.textContent;
   submitBtn.textContent = "Verifying...";
   submitBtn.disabled = true;
 
   try {
-    const result = await simulateApiCall(pendingVerificationUser, "signup");
+    const response = await fetch('/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: pendingVerificationUser.email,
+        code: enteredCode
+      })
+    });
 
-    if (result.success) {
+    const data = await response.json();
+
+    if (response.ok) {
       showMessage(
         verificationMessage,
         "Email verified successfully! Your account has been created.",
@@ -540,7 +576,7 @@ verificationFormElement.addEventListener("submit", async (e) => {
 
       setTimeout(() => {
         alert(
-          `Welcome to Pathfinder, ${pendingVerificationUser.name}!\n\nAccount created and verified successfully.\nEmail: ${pendingVerificationUser.email}\n\n(Teslim would work on the backend to log you in automatically here.)`,
+          `Welcome to Pathfinder, ${pendingVerificationUser.name}!\n\nAccount created and verified successfully.\nEmail: ${pendingVerificationUser.email}`,
         );
 
         pendingVerificationUser = null;
@@ -548,15 +584,14 @@ verificationFormElement.addEventListener("submit", async (e) => {
         clearInterval(countdownTimer);
 
         showForm(loginFormContainer);
-        document.getElementById("loginEmail").value = pendingVerificationUser
-          ? pendingVerificationUser.email
-          : "";
+        document.getElementById("loginEmail").value = data.email || "";
 
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
       }, 1000);
     } else {
-      showMessage(verificationMessage, result.message, "error");
+      showMessage(verificationMessage, data.message || "Invalid verification code", "error");
+      verificationInputs.forEach((input) => input.classList.add("error"));
       submitBtn.textContent = originalText;
       submitBtn.disabled = false;
     }
@@ -599,21 +634,43 @@ forgotPasswordFormElement.addEventListener("submit", async (e) => {
   submitBtn.textContent = "Sending Reset Link...";
   submitBtn.disabled = true;
 
-  setTimeout(() => {
-    showMessage(
-      forgotPasswordMessage,
-      `Password reset link sent to ${email}. Please check your inbox.`,
-      "success",
-    );
+  try {
+    const response = await fetch('/forgot-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        forgotEmail: email
+      })
+    });
 
-    forgotPasswordFormElement.reset();
+    const data = await response.json();
+
+    if (response.ok) {
+      showMessage(
+        forgotPasswordMessage,
+        `Password reset code sent to ${email}. Please check your inbox.`,
+        "success",
+      );
+
+      forgotPasswordFormElement.reset();
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+
+      setTimeout(() => {
+        showForm(loginFormContainer);
+      }, 3000);
+    } else {
+      showMessage(forgotPasswordMessage, data.message || "Failed to send reset code", "error");
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    }
+  } catch (error) {
+    showMessage(forgotPasswordMessage, "An error occurred. Please try again.", "error");
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
-
-    setTimeout(() => {
-      showForm(loginFormContainer);
-    }, 3000);
-  }, 1500);
+  }
 });
 
 document.addEventListener("click", (e) => {

@@ -3,18 +3,30 @@ from flask import Flask, render_template, request, jsonify
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
 import openai
+from werkzeug.security import generate_password_hash, check_password_hash
+from dotenv import load_dotenv
+import os, random, string
+from datetime import datetime, timedelta
+from flask import Flask, render_template, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail, Message
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 
+# Database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
 app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
 app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", 587))
-app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS") == "True"
-app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL") == "True"
+app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
+app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL", "False").lower() == "true"
 app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
 app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER")
@@ -26,11 +38,6 @@ mail = Mail(app)
 @app.route("/")
 def home():
     return render_template("index.html")
-
-# Login Page
-@app.route("/login")
-def login():
-    return render_template("login.html")
 
 # Contact Form
 @app.route("/contact", methods=["POST"])
@@ -120,6 +127,290 @@ User answers:
 
     return jsonify({"status": "error", "message": "Invalid request"}), 400
 
+
+# ---------------- MODELS ---------------- #
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150))
+    email = db.Column(db.String(150), unique=True)
+    password = db.Column(db.String(200))
+    verified = db.Column(db.Boolean, default=False)
+    age = db.Column(db.Integer)
+    career_path = db.Column(db.String(200))
+    is_student = db.Column(db.Boolean)
+    school = db.Column(db.String(200))
+    level = db.Column(db.String(100))
+
+class EmailVerification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(150))
+    code = db.Column(db.String(6))
+    expires_at = db.Column(db.DateTime)
+
+with app.app_context():
+    db.create_all()
+
+# ---------------- HELPERS ---------------- #
+
+def generate_code():
+    return ''.join(random.choices(string.digits, k=6))
+
+def send_verification_email(email, code):
+    msg = Message(
+        "Verify your Pathfinder account",
+        sender=app.config['MAIL_USERNAME'],
+        recipients=[email]
+    )
+    msg.body = f"""
+Your Pathfinder verification code is:
+
+{code}
+
+This code expires in 10 minutes.
+"""
+    mail.send(msg)
+
+# ---------------- ROUTES ---------------- #
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+
+# -------- SIGNUP -------- #
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = request.get_json()
+    name = data.get('signupName')
+    email = data.get('signupEmail')
+    password = data.get('signupPassword')
+
+    # Check if user already exists and is verified
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user and existing_user.verified:
+        return jsonify({"status": "error", "message": "Email already exists"}), 400
+
+    # If user exists but not verified, delete them and any verification records
+    if existing_user and not existing_user.verified:
+        EmailVerification.query.filter_by(email=email).delete()
+        db.session.delete(existing_user)
+        db.session.commit()
+
+    user = User(
+        name=name,
+        email=email,
+        password=generate_password_hash(password),
+        verified=False
+    )
+    db.session.add(user)
+
+    code = generate_code()
+    verification = EmailVerification(
+        email=email,
+        code=code,
+        expires_at=datetime.utcnow() + timedelta(minutes=10)
+    )
+    db.session.add(verification)
+    db.session.commit()
+
+    try:
+        send_verification_email(email, code)
+        return jsonify({
+            "status": "success",
+            "message": "Verification code sent",
+            "email": email
+        })
+    except Exception as e:
+        print(f"Email sending failed: {e}")
+        db.session.delete(verification)
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({
+            "status": "error",
+            "message": "Failed to send verification email. Please try again."
+        }), 500
+
+# -------- VERIFY EMAIL -------- #
+@app.route('/verify', methods=['POST'])
+def verify_email():
+    data = request.get_json()
+    email = data.get('email')
+    code = data.get('code')
+
+    record = EmailVerification.query.filter_by(email=email, code=code).first()
+
+    if not record:
+        return jsonify({"status": "error", "message": "Invalid code"}), 400
+
+    if record.expires_at < datetime.utcnow():
+        return jsonify({"status": "error", "message": "Code expired"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    user.verified = True
+
+    db.session.delete(record)
+    db.session.commit()
+
+    return jsonify({"status": "success", "message": "Email verified successfully"})
+
+# -------- RESEND CODE -------- #
+@app.route('/resend-code', methods=['POST'])
+def resend_code():
+    data = request.get_json()
+    email = data.get('email')
+
+    EmailVerification.query.filter_by(email=email).delete()
+
+    code = generate_code()
+    verification = EmailVerification(
+        email=email,
+        code=code,
+        expires_at=datetime.utcnow() + timedelta(minutes=10)
+    )
+    db.session.add(verification)
+    db.session.commit()
+
+    send_verification_email(email, code)
+
+    return jsonify({"status": "success", "message": "Code resent"})
+
+# -------- LOGIN -------- #
+@app.route('/login', methods=['POST'])
+def login_user():
+    data = request.get_json()
+    email = data.get('loginEmail')
+    password = data.get('loginPassword')
+
+    if not email or not password:
+        return jsonify({"status": "error", "message": "Email and password are required"}), 400
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        return jsonify({"status": "error", "message": "Invalid email or password"}), 401
+
+    if not check_password_hash(user.password, password):
+        return jsonify({"status": "error", "message": "Invalid email or password"}), 401
+
+    if not user.verified:
+        return jsonify({"status": "error", "message": "Please verify your email before logging in"}), 403
+
+    return jsonify({
+        "status": "success",
+        "message": "Login successful",
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email
+        }
+    })
+
+# -------- FORGOT PASSWORD -------- #
+@app.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    email = data.get('forgotEmail')
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"status": "error", "message": "Email not found"}), 400
+
+    code = generate_code()
+    verification = EmailVerification(
+        email=email,
+        code=code,
+        expires_at=datetime.utcnow() + timedelta(minutes=10)
+    )
+    db.session.add(verification)
+    db.session.commit()
+
+    send_verification_email(email, code)
+
+    return jsonify({"status": "success", "message": "Reset code sent"})
+
+# -------- RESET PASSWORD -------- #
+@app.route('/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    email = data.get('email')
+    code = data.get('code')
+    new_password = data.get('newPassword')
+
+    record = EmailVerification.query.filter_by(email=email, code=code).first()
+    if not record or record.expires_at < datetime.utcnow():
+        return jsonify({"status": "error", "message": "Invalid or expired code"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    user.password = generate_password_hash(new_password)
+
+    db.session.delete(record)
+    db.session.commit()
+
+    return jsonify({"status": "success", "message": "Password reset successful"})
+
+# -------- GET USER PROFILE -------- #
+@app.route('/get-profile', methods=['GET'])
+def get_profile():
+    # In a real app, you'd get user_id from session/token
+    # For now, we'll assume the user is logged in and get from query param
+    email = request.args.get('email')
+    if not email:
+        return jsonify({"status": "error", "message": "Email required"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+
+    return jsonify({
+        "status": "success",
+        "profile": {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "age": user.age,
+            "career_path": user.career_path,
+            "is_student": user.is_student,
+            "school": user.school,
+            "level": user.level
+        }
+    })
+
+# -------- UPDATE USER PROFILE -------- #
+@app.route('/update-profile', methods=['POST'])
+def update_profile():
+    data = request.get_json()
+    email = data.get('email')
+    updates = data.get('updates', {})
+
+    if not email:
+        return jsonify({"status": "error", "message": "Email required"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+
+    # Update fields if provided
+    if 'name' in updates:
+        user.name = updates['name']
+    if 'age' in updates:
+        user.age = updates['age']
+    if 'career_path' in updates:
+        user.career_path = updates['career_path']
+    if 'is_student' in updates:
+        user.is_student = updates['is_student']
+    if 'school' in updates:
+        user.school = updates['school']
+    if 'level' in updates:
+        user.level = updates['level']
+
+    db.session.commit()
+
+    return jsonify({"status": "success", "message": "Profile updated successfully"})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

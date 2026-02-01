@@ -42,6 +42,8 @@
         email: "", // We'll add email question
       };
 
+      let currentUserEmail = "";
+
       const questions = [
         {
           id: "name",
@@ -330,6 +332,11 @@
       function handleAnswer(questionId, answer) {
         userData[questionId] = answer;
 
+        // Set currentUserEmail when email is provided
+        if (questionId === 'email') {
+          currentUserEmail = answer;
+        }
+
         questionnaireContainer.style.opacity = "0";
         questionnaireContainer.style.transform = "translateY(-20px)";
 
@@ -339,21 +346,48 @@
         }, 300);
       }
 
-      function completeQuestionnaire() {
-        localStorage.setItem("userData", JSON.stringify(userData));
+      async function completeQuestionnaire() {
+        // Save to database
+        try {
+          const response = await fetch('/update-profile', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: currentUserEmail,
+              updates: {
+                name: userData.name,
+                age: parseInt(userData.age),
+                career_path: userData.careerPath,
+                is_student: userData.isStudent === "Yes",
+                school: userData.school,
+                level: userData.level
+              }
+            })
+          });
 
-        if (userData.name) {
-          welcomeText.textContent = `Welcome, ${userData.name}!`;
-          welcomeMessage.style.display = "block";
+          if (response.ok) {
+            if (userData.name) {
+              welcomeText.textContent = `Welcome, ${userData.name}!`;
+              welcomeMessage.style.display = "block";
+            }
+
+            updateProfileDetails();
+
+            questionnaireOverlay.style.opacity = "0";
+
+            setTimeout(() => {
+              questionnaireOverlay.style.display = "none";
+            }, 500);
+          } else {
+            console.error('Failed to save profile');
+            alert('Failed to save your profile. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error saving profile:', error);
+          alert('An error occurred while saving your profile.');
         }
-
-        updateProfileDetails();
-
-        questionnaireOverlay.style.opacity = "0";
-
-        setTimeout(() => {
-          questionnaireOverlay.style.display = "none";
-        }, 500);
       }
 
       function createDemoPrompts() {
@@ -614,23 +648,82 @@
         }
       }
 
-      function init() {
+      async function init() {
         initTheme();
 
-        const savedUserData = localStorage.getItem("userData");
-        if (savedUserData) {
-          userData = JSON.parse(savedUserData);
-          questionnaireOverlay.style.display = "none";
+        // Get current user email (in a real app, this would come from session/token)
+        // For now, we'll check localStorage for logged in user
+        const loggedInUser = localStorage.getItem("loggedInUser");
+        if (loggedInUser) {
+          const userInfo = JSON.parse(loggedInUser);
+          currentUserEmail = userInfo.email;
 
-          if (userData.name) {
-            welcomeText.textContent = `Welcome, ${userData.name}!`;
-            welcomeMessage.style.display = "block";
+          // Fetch user profile from database
+          try {
+            const response = await fetch(`/get-profile?email=${encodeURIComponent(currentUserEmail)}`);
+            if (response.ok) {
+              const data = await response.json();
+              const profile = data.profile;
+
+              // Populate userData from database
+              userData = {
+                name: profile.name || "",
+                email: profile.email || "",
+                age: profile.age ? profile.age.toString() : "",
+                careerPath: profile.career_path || "",
+                isStudent: profile.is_student ? "Yes" : "No",
+                school: profile.school || "",
+                level: profile.level || ""
+              };
+
+              // Check if all required fields are filled
+              const requiredFields = ['name', 'email', 'age', 'careerPath', 'isStudent'];
+              const hasAllRequired = requiredFields.every(field => userData[field]);
+
+              if (hasAllRequired) {
+                // All required info is complete, hide questionnaire
+                questionnaireOverlay.style.display = "none";
+
+                if (userData.name) {
+                  welcomeText.textContent = `Welcome, ${userData.name}!`;
+                  welcomeMessage.style.display = "block";
+                }
+
+                updateProfileDetails();
+              } else {
+                // Filter questions to only show missing ones
+                const missingQuestions = questions.filter(q => {
+                  if (q.id === 'name' && !userData.name) return true;
+                  if (q.id === 'email' && !userData.email) return true;
+                  if (q.id === 'age' && !userData.age) return true;
+                  if (q.id === 'careerPath' && !userData.careerPath) return true;
+                  if (q.id === 'isStudent' && !userData.isStudent) return true;
+                  if (q.id === 'school' && userData.isStudent === 'Yes' && !userData.school) return true;
+                  if (q.id === 'level' && userData.isStudent === 'Yes' && !userData.level) return true;
+                  return false;
+                });
+
+                // Replace questions array with only missing ones
+                questions.splice(0, questions.length, ...missingQuestions);
+
+                questionnaireOverlay.style.display = "flex";
+                showCurrentQuestion();
+              }
+            } else {
+              console.error('Failed to fetch profile');
+              // Fall back to showing all questions
+              questionnaireOverlay.style.display = "flex";
+              showCurrentQuestion();
+            }
+          } catch (error) {
+            console.error('Error fetching profile:', error);
+            // Fall back to showing all questions
+            questionnaireOverlay.style.display = "flex";
+            showCurrentQuestion();
           }
-
-          updateProfileDetails();
         } else {
-          questionnaireOverlay.style.display = "flex";
-          showCurrentQuestion();
+          // No logged in user, redirect to login
+          window.location.href = '/login';
         }
 
         createDemoPrompts();
