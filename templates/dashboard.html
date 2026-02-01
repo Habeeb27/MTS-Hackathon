@@ -15,7 +15,6 @@
     <link rel="icon" href="https://i.postimg.cc/ry3JjZwG/img.png" />
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
   </head>
-
   <body>
     <div class="floating-circles">
       <div class="circle-bg circle-1"></div>
@@ -43,9 +42,7 @@
         </a>
 
         <ul class="nav-links">
-          <li><a href="./index.html">Home</a></li>
           <li>
-            <a href="#" class="active"><i class="fas fa-user"></i> Dashboard</a>
           </li>
           <li class="profile-container">
             <button class="profile-btn" id="profileBtn">
@@ -60,7 +57,7 @@
                 </div>
               </div>
               <div class="profile-details" id="profileDetails">
-                <!-- Teslim add a function to show the user details here-->
+                <!-- User details will be shown here -->
               </div>
               <button class="logout-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i>
@@ -227,4 +224,5 @@
       </div>
     </div>
   </body>
+  <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
 </html>
