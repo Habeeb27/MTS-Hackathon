@@ -37,105 +37,8 @@ let userData = {
   level: "", // Will now store 100, 200, 300, 400, or 500
 };
 
-<<<<<<< HEAD
-      let currentUserEmail = "";
-
-      const questions = [
-        {
-          id: "name",
-          text: "What's your name?",
-          type: "text",
-          placeholder: "Enter your full name",
-          required: true,
-        },
-        {
-          id: "email",
-          text: "What's your email address?",
-          type: "email",
-          placeholder: "Enter your email",
-          required: true,
-        },
-        {
-          id: "age",
-          text: "How old are you?",
-          type: "number",
-          placeholder: "Enter your age",
-          required: true,
-        },
-        {
-          id: "careerPath",
-          text: "What's your current or desired career path?",
-          type: "text",
-          placeholder: "e.g., Software Engineering, Medicine, Business",
-          required: true,
-        },
-        {
-          id: "isStudent",
-          text: "Are you currently a student?",
-          type: "choice",
-          options: ["Yes", "No"],
-          required: true,
-        },
-        {
-          id: "school",
-          text: "Which school are you attending?",
-          type: "text",
-          placeholder: "Enter your school name",
-          required: false,
-          showIf: "Yes",
-        },
-        {
-          id: "level",
-          text: "Which level are you in?",
-          type: "select",
-          options: ["High School", "Undergraduate", "Graduate", "Doctorate"],
-          required: false,
-          showIf: "Yes",
-        },
-      ];
-=======
-// Updated questions - REMOVED name and email questions, UPDATED level options
-const questions = [
-  {
-    id: "age",
-    text: "How old are you?",
-    type: "number",
-    placeholder: "Enter your age",
-    required: true,
-  },
-  {
-    id: "careerPath",
-    text: "What's your current or desired career path?",
-    type: "text",
-    placeholder: "e.g., Software Engineering, Medicine, Business",
-    required: true,
-  },
-  {
-    id: "isStudent",
-    text: "Are you currently a student?",
-    type: "choice",
-    options: ["Yes", "No"],
-    required: true,
-  },
-  {
-    id: "school",
-    text: "Which school are you attending?",
-    type: "text",
-    placeholder: "Enter your school name",
-    required: false,
-    showIf: "Yes",
-  },
-  {
-    id: "level",
-    text: "Which level are you in?",
-    type: "select",
-    // UPDATED: Changed from High School, Undergraduate, etc. to 100-500 levels
-    options: ["100 Level", "200 Level", "300 Level", "400 Level", "500 Level"],
-    required: false,
-    showIf: "Yes",
-  },
-];
->>>>>>> 8e068b7a26f8c007d50de044adb73e903fb466e0
+// Questions will be loaded from the database
+let questions = [];
 
 let currentQuestionIndex = 0;
 
@@ -294,8 +197,8 @@ function showCurrentQuestion() {
                 `;
   } else {
     questionHTML += `
-                    <input type="${question.type}" 
-                           class="question-input" 
+                    <input type="${question.type}"
+                           class="question-input"
                            id="questionInput"
                            placeholder="${question.placeholder}"
                            ${question.required ? "required" : ""}
@@ -365,67 +268,12 @@ function showCurrentQuestion() {
   }, 10);
 }
 
-<<<<<<< HEAD
-        // Set currentUserEmail when email is provided
-        if (questionId === 'email') {
-          currentUserEmail = answer;
-        }
-
-        questionnaireContainer.style.opacity = "0";
-        questionnaireContainer.style.transform = "translateY(-20px)";
-=======
 function handleAnswer(questionId, answer) {
   userData[questionId] = answer;
->>>>>>> 8e068b7a26f8c007d50de044adb73e903fb466e0
 
   questionnaireContainer.style.opacity = "0";
   questionnaireContainer.style.transform = "translateY(-20px)";
 
-<<<<<<< HEAD
-      async function completeQuestionnaire() {
-        // Save to database
-        try {
-          const response = await fetch('/update-profile', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              email: currentUserEmail,
-              updates: {
-                name: userData.name,
-                age: parseInt(userData.age),
-                career_path: userData.careerPath,
-                is_student: userData.isStudent === "Yes",
-                school: userData.school,
-                level: userData.level
-              }
-            })
-          });
-
-          if (response.ok) {
-            if (userData.name) {
-              welcomeText.textContent = `Welcome, ${userData.name}!`;
-              welcomeMessage.style.display = "block";
-            }
-
-            updateProfileDetails();
-
-            questionnaireOverlay.style.opacity = "0";
-
-            setTimeout(() => {
-              questionnaireOverlay.style.display = "none";
-            }, 500);
-          } else {
-            console.error('Failed to save profile');
-            alert('Failed to save your profile. Please try again.');
-          }
-        } catch (error) {
-          console.error('Error saving profile:', error);
-          alert('An error occurred while saving your profile.');
-        }
-      }
-=======
   setTimeout(() => {
     currentQuestionIndex++;
     showCurrentQuestion();
@@ -442,7 +290,6 @@ function completeQuestionnaire() {
   updateProfileDetails();
 
   questionnaireOverlay.style.opacity = "0";
->>>>>>> 8e068b7a26f8c007d50de044adb73e903fb466e0
 
   setTimeout(() => {
     questionnaireOverlay.style.display = "none";
@@ -660,6 +507,100 @@ function removeTypingIndicator() {
   }
 }
 
+async function loadQuestions() {
+  try {
+    const response = await fetch('/get-questions');
+    const data = await response.json();
+    if (data.status === 'success') {
+      questions = data.questions;
+    } else {
+      console.error('Failed to load questions:', data.message);
+      // Fallback to hardcoded questions if API fails
+      questions = [
+        {
+          id: "age",
+          text: "How old are you?",
+          type: "number",
+          placeholder: "Enter your age",
+          required: true,
+        },
+        {
+          id: "careerPath",
+          text: "What's your current or desired career path?",
+          type: "text",
+          placeholder: "e.g., Software Engineering, Medicine, Business",
+          required: true,
+        },
+        {
+          id: "isStudent",
+          text: "Are you currently a student?",
+          type: "choice",
+          options: ["Yes", "No"],
+          required: true,
+        },
+        {
+          id: "school",
+          text: "Which school are you attending?",
+          type: "text",
+          placeholder: "Enter your school name",
+          required: false,
+          showIf: "Yes",
+        },
+        {
+          id: "level",
+          text: "Which level are you in?",
+          type: "select",
+          options: ["100 Level", "200 Level", "300 Level", "400 Level", "500 Level"],
+          required: false,
+          showIf: "Yes",
+        },
+      ];
+    }
+  } catch (error) {
+    console.error('Error loading questions:', error);
+    // Fallback to hardcoded questions
+    questions = [
+      {
+        id: "age",
+        text: "How old are you?",
+        type: "number",
+        placeholder: "Enter your age",
+        required: true,
+      },
+      {
+        id: "careerPath",
+        text: "What's your current or desired career path?",
+        type: "text",
+        placeholder: "e.g., Software Engineering, Medicine, Business",
+        required: true,
+      },
+      {
+        id: "isStudent",
+        text: "Are you currently a student?",
+        type: "choice",
+        options: ["Yes", "No"],
+        required: true,
+      },
+      {
+        id: "school",
+        text: "Which school are you attending?",
+        type: "text",
+        placeholder: "Enter your school name",
+        required: false,
+        showIf: "Yes",
+      },
+      {
+        id: "level",
+        text: "Which level are you in?",
+        type: "select",
+        options: ["100 Level", "200 Level", "300 Level", "400 Level", "500 Level"],
+        required: false,
+        showIf: "Yes",
+      },
+    ];
+  }
+}
+
 function generateAIResponse(userMessage) {
   const lowerMessage = userMessage.toLowerCase();
   const responses = {
@@ -700,87 +641,11 @@ function generateAIResponse(userMessage) {
   }
 }
 
-<<<<<<< HEAD
-      async function init() {
-        initTheme();
-
-        // Get current user email (in a real app, this would come from session/token)
-        // For now, we'll check localStorage for logged in user
-        const loggedInUser = localStorage.getItem("loggedInUser");
-        if (loggedInUser) {
-          const userInfo = JSON.parse(loggedInUser);
-          currentUserEmail = userInfo.email;
-
-          // Fetch user profile from database
-          try {
-            const response = await fetch(`/get-profile?email=${encodeURIComponent(currentUserEmail)}`);
-            if (response.ok) {
-              const data = await response.json();
-              const profile = data.profile;
-
-              // Populate userData from database
-              userData = {
-                name: profile.name || "",
-                email: profile.email || "",
-                age: profile.age ? profile.age.toString() : "",
-                careerPath: profile.career_path || "",
-                isStudent: profile.is_student ? "Yes" : "No",
-                school: profile.school || "",
-                level: profile.level || ""
-              };
-
-              // Check if all required fields are filled
-              const requiredFields = ['name', 'email', 'age', 'careerPath', 'isStudent'];
-              const hasAllRequired = requiredFields.every(field => userData[field]);
-
-              if (hasAllRequired) {
-                // All required info is complete, hide questionnaire
-                questionnaireOverlay.style.display = "none";
-
-                if (userData.name) {
-                  welcomeText.textContent = `Welcome, ${userData.name}!`;
-                  welcomeMessage.style.display = "block";
-                }
-
-                updateProfileDetails();
-              } else {
-                // Filter questions to only show missing ones
-                const missingQuestions = questions.filter(q => {
-                  if (q.id === 'name' && !userData.name) return true;
-                  if (q.id === 'email' && !userData.email) return true;
-                  if (q.id === 'age' && !userData.age) return true;
-                  if (q.id === 'careerPath' && !userData.careerPath) return true;
-                  if (q.id === 'isStudent' && !userData.isStudent) return true;
-                  if (q.id === 'school' && userData.isStudent === 'Yes' && !userData.school) return true;
-                  if (q.id === 'level' && userData.isStudent === 'Yes' && !userData.level) return true;
-                  return false;
-                });
-
-                // Replace questions array with only missing ones
-                questions.splice(0, questions.length, ...missingQuestions);
-
-                questionnaireOverlay.style.display = "flex";
-                showCurrentQuestion();
-              }
-            } else {
-              console.error('Failed to fetch profile');
-              // Fall back to showing all questions
-              questionnaireOverlay.style.display = "flex";
-              showCurrentQuestion();
-            }
-          } catch (error) {
-            console.error('Error fetching profile:', error);
-            // Fall back to showing all questions
-            questionnaireOverlay.style.display = "flex";
-            showCurrentQuestion();
-          }
-        } else {
-          // No logged in user, redirect to login
-          window.location.href = '/login';
-        }
-=======
-function init() {
+async function init() {
   initTheme();
+
+  // Load questions from database first
+  await loadQuestions();
 
   const savedUserData = localStorage.getItem("userData");
   if (savedUserData) {
@@ -796,7 +661,6 @@ function init() {
     questionnaireOverlay.style.display = "flex";
     showCurrentQuestion();
   }
->>>>>>> 8e068b7a26f8c007d50de044adb73e903fb466e0
 
   createDemoPrompts();
   setInterval(createDemoPrompts, 5000);
