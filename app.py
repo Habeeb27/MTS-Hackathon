@@ -5,12 +5,10 @@ from flask_mail import Mail, Message
 from dotenv import load_dotenv
 import openai
 from werkzeug.security import generate_password_hash, check_password_hash
-from dotenv import load_dotenv
-import os, random, string
+import random, string
 from datetime import datetime, timedelta
-from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_mail import Mail, Message
+from geminiai import get_ai_response, CAREER_ASSESSMENT_QUESTIONS, analyze_career_assessment
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -540,6 +538,60 @@ def get_questions():
         questions_list.append(question_dict)
 
     return jsonify({"status": "success", "questions": questions_list})
+
+# -------- DASHBOARD CHAT -------- #
+@app.route('/chat', methods=['POST'])
+def chat():
+    data = request.get_json()
+    message = data.get('message', '').strip()
+
+    if not message:
+        return jsonify({"status": "error", "message": "Message is required"}), 400
+
+    try:
+        ai_response = get_ai_response(message)
+        return jsonify({"status": "success", "response": ai_response})
+    except Exception as e:
+        print(f"Error in chat endpoint: {e}")
+        return jsonify({"status": "error", "message": "Failed to get AI response"}), 500
+
+# -------- CAREER ASSESSMENT -------- #
+@app.route('/get-assessment-questions', methods=['GET'])
+def get_assessment_questions():
+    return jsonify({"status": "success", "questions": CAREER_ASSESSMENT_QUESTIONS})
+
+@app.route('/submit-assessment', methods=['POST'])
+def submit_assessment():
+    data = request.get_json()
+    answers = data.get('answers', {})
+
+    if not answers:
+        return jsonify({"status": "error", "message": "Answers are required"}), 400
+
+    try:
+        analysis = analyze_career_assessment(answers)
+        return jsonify({"status": "success", "analysis": analysis})
+    except Exception as e:
+        print(f"Error in assessment analysis: {e}")
+        return jsonify({"status": "error", "message": "Failed to analyze assessment"}), 500
+
+@app.route('/select-career', methods=['POST'])
+def select_career():
+    data = request.get_json()
+    email = data.get('email')
+    career_title = data.get('career_title')
+
+    if not email or not career_title:
+        return jsonify({"status": "error", "message": "Email and career title are required"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+
+    user.career_path = career_title
+    db.session.commit()
+
+    return jsonify({"status": "success", "message": "Career path updated successfully"})
 
 if __name__ == "__main__":
     app.run(debug=True)
