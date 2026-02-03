@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pathfinder - Connect Wallet</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="https://i.postimg.cc/ry3JjZwG/img.png" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='connect.css') }}" />
+  </head>
+  <body>
+    <div class="floating-circles">
+      <div class="circle-bg circle-1"></div>
+      <div class="circle-bg circle-2"></div>
+      <div class="circle-bg circle-3"></div>
+      <div class="circle-bg circle-4"></div>
+    </div>
+
+    <div class="connect-circles"></div>
+    <div class="connect-circle"></div>
+    <div class="connect-circle"></div>
+                </div>
+      <nav class="navbar">
+        <div class="container nav-container">        
+                <div class="profile-actions">
+                   <a href="dashboard.html"><button id="dashboardbtn">Dashboard</button></a>
+                </div>
+                </div>
+            </li>
+            </ul>
+        </div>
+          </li>
+            <li class="profile-container">
+                <button class="profile-btn" id="profileBtn">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+                </button>
+                
+                <div class="profile-actions">
+                    <a href="login.html"><button id="logoutBtn">Logout</button></a>
+                </div>
+                </div>
+            </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="profile-dropdown" id="profileDropdown">
+                <div class="profile-header">
+                    <div class="profile-name" id="profileName">User Name</div>
+                    <div class="profile-email" id="profileEmail">user@example.com</div>
+                </div>
+                <div class="profile-details" id="profileDetails">
+                    <!-- User details will be shown here -->
+                </div>
+    <div class="connectcontainer">
+        <h1>Connect & Grow Together</h1>
+        <p>Find your people. Grow your path.</p>
+        <p>Connect with others who share your career interests and learning goals</p>
+        <p>Stay motivated together on your journey.</p>
+    </div>
+    <br>
+    <div class="search-container " style="justify-self: center; text-align: center; justify-content: center;">
+    <input type="text" placeholder="Search for users..." id="searchInput" style="width: 400px; height: 50px; border-radius: 8px;">
+    <br><br>
+    <button id="searchBtn" style="width: 100px; height: 50px; border-radius: 8px;">Search</button>
+    </div>
+    <br>
+    <h3>Available Users For You:</h3>
+    <br>
+    <p><img src="https://i.postimg.cc/3x3QzSGq/user1.png" alt="User 1" class="user-image" style="width: 50px; height: 50px;">Aremu Habeebullah</p>
+    <p>Aspiring Software Engineer</p>
+    <button>Connect</button>
+    <br><br>
+    <p><img src="https://i.postimg.cc/3x3QzSGq/user2.png" alt="User 2" class="user-image" style="width: 50px; height: 50px;">Akintayo Abdul Samad</p>
+    <p>Aspiring Cybersecurity Analyst</p>
+    <button>Connect</button>
+    <br><br>
+    <p><img src="https://i.postimg.cc/3x3QzSGq/user3.png" alt="User 3" class="user-image" style="width: 50px; height: 50px;">Olalekan Olamilekan</p>
+    <p>Aspiring Data Scientist</p>
+    <button>Connect</button>
+    <br><br>
+    <p><img src="https://i.postimg.cc/3x3QzSGq/user4.png" alt="User 4" class="user-image"  style="width: 50px; height: 50px;">Ayomide Johnson</p>
+    <p>Aspiring AI Researcher</p>
+    <button>Connect</button>
+    <br><br>
+    <p><img src="https://i.postimg.cc/3x3QzSGq/user5.png" alt="User 5" class="user-image" style="width: 50px; height: 50px;">Fatimah Suleiman</p>
+    <p>Aspiring Cloud Engineer</p>
+    <button>Connect</button>
+    <br><br>
+    <p><img src="https://i.postimg.cc/3x3QzSGq/user6.png" alt="User 6" class="user-image" style="width: 50px; height: 50px;">Samuel Adeyemi</p>
+    <p>Aspiring DevOps Engineer</p>
+    <button>Connect</button>
+    <br><br>
+    <p><img src="https://i.postimg.cc/3x3QzSGq/user7.png" alt="User 7" class="user-image" style="width: 50px; height: 50px;">Chinwe Nnaji</p>
+    <p>Aspiring UX/UI Designer</p>
+    <button>Connect</button>
+    <br><br>
+    <p><img src="https://i.postimg.cc/3x3QzSGq/user8.png" alt="User 8" class="user-image" style="width: 50px; height: 50px;">Rukayat Bello</p>
+    <p>Aspiring Full-Stack Developer</p>
+    <button>Connect</button>
+    <br><br>
+    <p><img src="https://i.postimg.cc/3x3QzSGq/user9.png" alt="User 9" class="user-image" style="width: 50px; height: 50px;">Emmanuel Okoro</p>
+    <p>Aspiring Mobile App Developer</p>
+    <button>Connect</button>
+    <br><br>
+    <div class="user-list" id="userList">
+        <!-- User profiles will be dynamically inserted here -->
+    </div>
