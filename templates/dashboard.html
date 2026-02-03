@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
   </head>
   <body>
+    <div class="dashboard-background" id="dashboardBackground"></div>
+
     <div class="floating-circles">
       <div class="circle-bg circle-1"></div>
       <div class="circle-bg circle-2"></div>
@@ -23,16 +25,9 @@
       <div class="circle-bg circle-4"></div>
     </div>
 
-    <div class="dashboard-circles">
-      <div class="dashboard-circle"></div>
-      <div class="dashboard-circle"></div>
-      <div class="dashboard-circle"></div>
-      <div class="dashboard-circle"></div>
-    </div>
-
     <nav class="navbar">
       <div class="container nav-container">
-        <a href="./index.html" class="logo">
+        <a href="/" class="logo">
           <img
             src="https://i.postimg.cc/ry3JjZwG/img.png"
             alt="Pathfinder Logo"
@@ -43,6 +38,10 @@
 
         <ul class="nav-links">
           <li>
+            <!-- Mobile menu button -->
+            <button class="menu-btn" id="mobileMenuBtn">
+              <i class="fas fa-bars"></i>
+            </button>
           </li>
           <li class="profile-container">
             <button class="profile-btn" id="profileBtn">
@@ -74,9 +73,10 @@
       </div>
     </nav>
 
+    <!-- Chat Navbar -->
     <nav class="chat-navbar" id="chatNavbar">
       <div class="container chat-nav-container">
-        <a href="#" class="logo">
+        <a href="/" class="logo">
           <img
             src="https://i.postimg.cc/ry3JjZwG/img.png"
             alt="Pathfinder Logo"
@@ -86,9 +86,14 @@
         </a>
 
         <div class="chat-nav-controls">
-          <button class="history-btn" id="historyBtn">
-            <i class="fas fa-history"></i>
-          </button>
+          <div class="chat-controls-container">
+            <button class="new-chat-btn" id="newChatBtn">
+              <i class="fas fa-plus"></i>
+            </button>
+            <button class="history-btn" id="historyBtn">
+              <i class="fas fa-history"></i>
+            </button>
+          </div>
           <button class="back-btn" id="backToDashboard">
             <i class="fas fa-arrow-left"></i>
             <span>Back to Dashboard</span>
@@ -100,101 +105,132 @@
       </div>
     </nav>
 
+    <!-- Roadmap Navbar -->
+    <nav class="roadmap-navbar" id="roadmapNavbar">
+      <div class="container nav-container">
+        <a href="/" class="logo">
+          <img
+            src="https://i.postimg.cc/ry3JjZwG/img.png"
+            alt="Pathfinder Logo"
+            class="logo-image"
+          />
+          <div class="logo-text">Pathfinder Roadmap</div>
+        </a>
+
+        <div class="chat-nav-controls">
+          <button class="back-btn" id="backToDashboardFromRoadmap">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Dashboard</span>
+          </button>
+          <button class="theme-toggle" id="roadmapThemeToggle">
+            <i class="fas fa-moon"></i>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Sidebar for Chat History -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <h3 class="sidebar-title">
-          <i class="fas fa-history"></i> Chat History
-        </h3>
+        <div class="sidebar-logo">
+          <img
+            src="https://i.postimg.cc/ry3JjZwG/img.png"
+            alt="Pathfinder Logo"
+            class="sidebar-logo-image"
+          />
+          <h3 class="sidebar-title">Pathfinder</h3>
+        </div>
         <button class="close-sidebar" id="closeSidebar">
           <i class="fas fa-times"></i>
         </button>
       </div>
       <div class="chat-history" id="chatHistory">
-        <div class="chat-history-item">
-          <div class="chat-history-date">Today, 10:30 AM</div>
-          Career path discussion
-        </div>
-        <div class="chat-history-item">
-          <div class="chat-history-date">Yesterday, 3:45 PM</div>
-          Academic guidance session
-        </div>
-        <div class="chat-history-item">
-          <div class="chat-history-date">Oct 15, 2024</div>
-          Financial planning advice
+        <div class="empty-history" id="emptyHistory">
+          <i class="fas fa-comment-slash"></i>
+          <p>There's nothing here yet!</p>
+          <p style="margin-top: 10px;">Start chatting to view your history.</p>
         </div>
       </div>
     </div>
 
+    <!-- Questionnaire Overlay -->
     <div class="questionnaire-overlay" id="questionnaireOverlay">
-      <div class="questionnaire-container" id="questionnaireContainer">
-      </div>
+      <div class="questionnaire-container" id="questionnaireContainer"></div>
     </div>
 
+    <!-- Main Dashboard -->
     <div class="dashboard-container" id="dashboardContainer">
       <div class="dashboard-center">
-        <div class="logo-center">
-          <img
-            src="https://i.postimg.cc/ry3JjZwG/img.png"
-            alt="Pathfinder Logo"
-          />
-        </div>
-
         <div class="welcome-message" id="welcomeMessage">
           <h2 class="welcome-text" id="welcomeText">Welcome to Pathfinder!</h2>
-          <p class="sub-welcome">Your AI Career Advisor</p>
+          <p class="sub-welcome">Your personal career guidance assistant</p>
+          <p class="action-question">What would you like to do today?</p>
         </div>
 
-        <!-- 2 Cards Grid -->
-        <div class="cards-grid">
-          <div class="simple-card">
+        <!-- 3 Cards Grid -->
+        <div class="cards-grid" id="cardsGrid">
+          <!-- AI Chatbot Card -->
+          <div class="simple-card" id="aiChatCard">
+            <div class="card-animation-container" id="aiCardAnimation"></div>
             <div class="card-icon">
-              <i class="fas fa-robot"></i>
+              <img
+                src="https://i.postimg.cc/ry3JjZwG/img.png"
+                alt="Pathfinder AI"
+                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+              />
             </div>
-            <h3 class="card-title">AI Career Assistant</h3>
+            <h3 class="card-title">Meet Pathfinder AI</h3>
             <p class="card-description">
-              Get personalized career guidance from our AI assistant. Discuss
-              your goals, get recommendations, and plan your path to success.
+              Chat with our AI assistant for personalized career guidance and
+              advice tailored just for you.
             </p>
+            <button class="start-btn" id="startChatBtn">
+              <span>Start Chat</span>
+              <i class="fas fa-arrow-right"></i>
+            </button>
           </div>
 
-          <div class="simple-card">
+          <!-- Roadmap Card -->
+          <div class="simple-card" id="roadmapCard">
+            <div class="card-animation-container" id="roadmapCardAnimation"></div>
             <div class="card-icon">
-              <i class="fas fa-chart-line"></i>
+              <i class="fas fa-road"></i>
             </div>
-            <h3 class="card-title">Progress Tracking</h3>
+            <h3 class="card-title">View Your Roadmap</h3>
             <p class="card-description">
-              Track your career development progress, set milestones, and
-              monitor your growth over time with detailed analytics.
+              Explore your personalized career roadmap with milestones and
+              actionable steps to reach your goals.
             </p>
+            <button class="start-btn" id="startRoadmapBtn">
+              <span>View Roadmap</span>
+              <i class="fas fa-arrow-right"></i>
+            </button>
           </div>
-        </div>
 
-        <div class="ai-input-pane" id="aiInputPane">
-          <div class="pane-header">
-            <h3 class="pane-title">Ask Pathfinder AI</h3>
-            <p class="pane-subtitle">
-              Click on a question below or type your own
+          <!-- Connect Card -->
+          <div class="simple-card" id="connectCard">
+            <div class="card-animation-container" id="connectCardAnimation"></div>
+            <div class="card-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <h3 class="card-title">Connect with Others</h3>
+            <p class="card-description">
+              Join our community to connect with peers, mentors, and
+              professionals in your desired career path.
             </p>
-          </div>
-
-          <div class="demo-prompts" id="demoPrompts">
-          </div>
-
-          <div class="input-wrapper">
-            <input
-              type="text"
-              class="ai-input"
-              id="aiInput"
-              placeholder="Type your career question here..."
-            />
-            <button class="input-btn" id="inputBtn">
-              <i class="fas fa-paper-plane"></i>
+            <button class="start-btn" id="startConnectBtn">
+              <a href="/connect" style="text-decoration: none; color: inherit; display: block;">
+                <span>Connect Now</span>
+                <i class="fas fa-arrow-right"></i>
+              </a>
             </button>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Chat Page -->
     <div class="chat-page" id="chatPage">
       <div class="chat-container">
         <div class="chat-messages" id="chatMessages">
@@ -223,12 +259,20 @@
         </div>
       </div>
     </div>
+    <div class="roadmap-page" id="roadmapPage">
+      <div class="roadmap-container">
+        <div class="roadmap-center">
+          <div class="welcome-message">
+            <h2 class="welcome-text">Your Career Roadmap</h2>
+            <p class="sub-welcome">Follow these steps to achieve your career goals</p>
+            <p class="action-question">Start your journey with these key milestones</p>
+          </div>
 
+          <div class="roadmap-cards-grid" id="roadmapCardsGrid">
+          </div>
+        </div>
+      </div>
+    </div>
     <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
   </body>
-
 </html>
-
-  <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
-</html>
-
