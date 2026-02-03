@@ -1,7 +1,14 @@
 from google import genai
+from dotenv import load_dotenv
+import os
 
-client = genai.Client()
+# Load environment variables from .env
+load_dotenv()
 
+# Get the API key from the environment
+api_key = os.getenv("GOOGLE_API_KEY")
+
+client = genai.Client(api_key=api_key)
 while True:
     user_input = input("You: ")
     if user_input.lower() in ["exit", "quit"]:
