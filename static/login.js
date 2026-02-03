@@ -435,6 +435,9 @@ loginFormElement.addEventListener("submit", async (e) => {
     if (response.ok) {
       showMessage(loginMessage, data.message, "success");
 
+      // Store user email in localStorage for dashboard use
+      localStorage.setItem('userEmail', email);
+
       setTimeout(() => {
         // Redirect to dashboard on successful login
         window.location.href = '/dashboard';
