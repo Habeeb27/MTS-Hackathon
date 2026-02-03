@@ -280,20 +280,47 @@ function handleAnswer(questionId, answer) {
   }, 300);
 }
 
-function completeQuestionnaire() {
-  localStorage.setItem("userData", JSON.stringify(userData));
+async function completeQuestionnaire() {
+  const userEmail = localStorage.getItem('userEmail');
+  if (!userEmail) {
+    console.error('User email not found');
+    return;
+  }
 
-  // Since we don't have a name, show generic welcome
-  welcomeText.textContent = `Welcome to Pathfinder!`;
-  welcomeMessage.style.display = "block";
+  try {
+    const response = await fetch('/save-questionnaire', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: userEmail,
+        answers: userData
+      })
+    });
 
-  updateProfileDetails();
+    const data = await response.json();
 
-  questionnaireOverlay.style.opacity = "0";
+    if (response.ok) {
+      // Since we don't have a name, show generic welcome
+      welcomeText.textContent = `Welcome to Pathfinder!`;
+      welcomeMessage.style.display = "block";
 
-  setTimeout(() => {
-    questionnaireOverlay.style.display = "none";
-  }, 500);
+      updateProfileDetails();
+
+      questionnaireOverlay.style.opacity = "0";
+
+      setTimeout(() => {
+        questionnaireOverlay.style.display = "none";
+      }, 500);
+    } else {
+      console.error('Failed to save questionnaire:', data.message);
+      alert('Failed to save your answers. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error saving questionnaire:', error);
+    alert('An error occurred while saving your answers.');
+  }
 }
 
 function createDemoPrompts() {
@@ -368,6 +395,7 @@ function goBackToDashboard() {
 function logout() {
   // Clear user data from localStorage
   localStorage.removeItem("userData");
+  localStorage.removeItem("userEmail");
 
   // Reset user data
   userData = {
@@ -392,13 +420,8 @@ function logout() {
     goBackToDashboard();
   }
 
-  currentQuestionIndex = 0;
-  questionnaireOverlay.style.display = "flex";
-  questionnaireOverlay.style.opacity = "1";
-  showCurrentQuestion();
-
-  chatMessages.innerHTML =
-    '<div class="message ai">Hello! I\'m your Pathfinder AI assistant. How can I help you with your career journey today?<div class="message-time">Just now</div></div>';
+  // Redirect to login page
+  window.location.href = '/login';
 }
 
 function sendChatMessage() {
@@ -647,19 +670,51 @@ async function init() {
   // Load questions from database first
   await loadQuestions();
 
-  const savedUserData = localStorage.getItem("userData");
-  if (savedUserData) {
-    userData = JSON.parse(savedUserData);
-    questionnaireOverlay.style.display = "none";
+  // Check if user has already filled questionnaire by fetching profile
+  const userEmail = localStorage.getItem('userEmail');
+  if (userEmail) {
+    try {
+      const response = await fetch(`/get-profile?email=${encodeURIComponent(userEmail)}`);
+      const data = await response.json();
 
-    // Since we don't have a name, show generic welcome
-    welcomeText.textContent = `Welcome to Pathfinder!`;
-    welcomeMessage.style.display = "block";
+      if (response.ok && data.status === 'success') {
+        const profile = data.profile;
+        // Check if questionnaire fields are filled
+        if (profile.age && profile.career_path && profile.is_student !== null) {
+          // User has already filled questionnaire, load data
+          userData = {
+            age: profile.age ? profile.age.toString() : "",
+            careerPath: profile.career_path || "",
+            isStudent: profile.is_student ? "Yes" : "No",
+            school: profile.school || "",
+            level: profile.level || ""
+          };
+          questionnaireOverlay.style.display = "none";
 
-    updateProfileDetails();
+          // Since we don't have a name, show generic welcome
+          welcomeText.textContent = `Welcome to Pathfinder!`;
+          welcomeMessage.style.display = "block";
+
+          updateProfileDetails();
+        } else {
+          // User hasn't filled questionnaire yet
+          questionnaireOverlay.style.display = "flex";
+          showCurrentQuestion();
+        }
+      } else {
+        // Error fetching profile, show questionnaire
+        questionnaireOverlay.style.display = "flex";
+        showCurrentQuestion();
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      // On error, show questionnaire
+      questionnaireOverlay.style.display = "flex";
+      showCurrentQuestion();
+    }
   } else {
-    questionnaireOverlay.style.display = "flex";
-    showCurrentQuestion();
+    // No user email, redirect to login
+    window.location.href = '/login';
   }
 
   createDemoPrompts();

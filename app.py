@@ -486,6 +486,36 @@ def update_profile():
 
     return jsonify({"status": "success", "message": "Profile updated successfully"})
 
+# -------- SAVE QUESTIONNAIRE -------- #
+@app.route('/save-questionnaire', methods=['POST'])
+def save_questionnaire():
+    data = request.get_json()
+    email = data.get('email')
+    answers = data.get('answers', {})
+
+    if not email:
+        return jsonify({"status": "error", "message": "Email required"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+
+    # Update user fields with questionnaire answers
+    if 'age' in answers:
+        user.age = answers['age']
+    if 'careerPath' in answers:
+        user.career_path = answers['careerPath']
+    if 'isStudent' in answers:
+        user.is_student = answers['isStudent'] == 'Yes'
+    if 'school' in answers:
+        user.school = answers['school']
+    if 'level' in answers:
+        user.level = answers['level']
+
+    db.session.commit()
+
+    return jsonify({"status": "success", "message": "Questionnaire saved successfully"})
+
 # -------- GET QUESTIONS -------- #
 @app.route('/get-questions', methods=['GET'])
 def get_questions():
