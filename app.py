@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask, render_template, request, jsonify
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
@@ -142,6 +143,16 @@ class User(db.Model):
     school = db.Column(db.String(200))
     level = db.Column(db.String(100))
 
+class Question(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    question_id = db.Column(db.String(50), unique=True)
+    text = db.Column(db.String(500))
+    type = db.Column(db.String(50))
+    placeholder = db.Column(db.String(200))
+    required = db.Column(db.Boolean, default=False)
+    show_if = db.Column(db.String(50))
+    options = db.Column(db.Text)  # JSON string
+
 class EmailVerification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150))
@@ -150,6 +161,69 @@ class EmailVerification(db.Model):
 
 with app.app_context():
     db.create_all()
+
+    # Seed questions if not already present
+    if Question.query.count() == 0:
+        questions_data = [
+            {
+                'question_id': 'age',
+                'text': 'How old are you?',
+                'type': 'number',
+                'placeholder': 'Enter your age',
+                'required': True,
+                'show_if': None,
+                'options': None
+            },
+            {
+                'question_id': 'careerPath',
+                'text': 'What\'s your current or desired career path?',
+                'type': 'text',
+                'placeholder': 'e.g., Software Engineering, Medicine, Business',
+                'required': True,
+                'show_if': None,
+                'options': None
+            },
+            {
+                'question_id': 'isStudent',
+                'text': 'Are you currently a student?',
+                'type': 'choice',
+                'placeholder': None,
+                'required': True,
+                'show_if': None,
+                'options': json.dumps(['Yes', 'No'])
+            },
+            {
+                'question_id': 'school',
+                'text': 'Which school are you attending?',
+                'type': 'text',
+                'placeholder': 'Enter your school name',
+                'required': False,
+                'show_if': 'Yes',
+                'options': None
+            },
+            {
+                'question_id': 'level',
+                'text': 'Which level are you in?',
+                'type': 'select',
+                'placeholder': None,
+                'required': False,
+                'show_if': 'Yes',
+                'options': json.dumps(['100 Level', '200 Level', '300 Level', '400 Level', '500 Level'])
+            }
+        ]
+
+        for q_data in questions_data:
+            question = Question(
+                question_id=q_data['question_id'],
+                text=q_data['text'],
+                type=q_data['type'],
+                placeholder=q_data['placeholder'],
+                required=q_data['required'],
+                show_if=q_data['show_if'],
+                options=q_data['options']
+            )
+            db.session.add(question)
+        db.session.commit()
 
 # ---------------- HELPERS ---------------- #
 
@@ -411,6 +485,31 @@ def update_profile():
     db.session.commit()
 
     return jsonify({"status": "success", "message": "Profile updated successfully"})
+
+# -------- GET QUESTIONS -------- #
+@app.route('/get-questions', methods=['GET'])
+def get_questions():
+    questions = Question.query.all()
+    questions_list = []
+    for q in questions:
+        question_dict = {
+            'id': q.question_id,
+            'text': q.text,
+            'type': q.type,
+            'placeholder': q.placeholder,
+            'required': q.required,
+            'show_if': q.show_if
+        }
+        if q.options:
+            try:
+                question_dict['options'] = json.loads(q.options)
+            except json.JSONDecodeError:
+                question_dict['options'] = []
+        else:
+            question_dict['options'] = []
+        questions_list.append(question_dict)
+
+    return jsonify({"status": "success", "questions": questions_list})
 
 if __name__ == "__main__":
     app.run(debug=True)
