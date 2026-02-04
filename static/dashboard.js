@@ -1,5 +1,9 @@
       const themeToggle = document.getElementById("themeToggle");
       const chatThemeToggle = document.getElementById("chatThemeToggle");
+<<<<<<< HEAD
+      const assessmentThemeToggle = document.getElementById("assessmentThemeToggle");
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       const roadmapThemeToggle = document.getElementById("roadmapThemeToggle");
       const historyBtn = document.getElementById("historyBtn");
       const newChatBtn = document.getElementById("newChatBtn");
@@ -9,10 +13,19 @@
       const questionnaireContainer = document.getElementById("questionnaireContainer");
       const cardsGrid = document.getElementById("cardsGrid");
       const aiChatCard = document.getElementById("aiChatCard");
+<<<<<<< HEAD
+      const assessmentCard = document.getElementById("assessmentCard");
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       const roadmapCard = document.getElementById("roadmapCard");
       const connectCard = document.getElementById("connectCard");
       const chatPage = document.getElementById("chatPage");
       const chatNavbar = document.getElementById("chatNavbar");
+<<<<<<< HEAD
+      const assessmentPage = document.getElementById("assessmentPage");
+      const assessmentNavbar = document.getElementById("assessmentNavbar");
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       const roadmapPage = document.getElementById("roadmapPage");
       const roadmapNavbar = document.getElementById("roadmapNavbar");
       const dashboardContainer = document.getElementById("dashboardContainer");
@@ -37,11 +50,19 @@
 
       // The cards buttons
       const startChatBtn = document.getElementById("startChatBtn");
+<<<<<<< HEAD
+      const startAssessmentBtn = document.getElementById("startAssessmentBtn");
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       const startRoadmapBtn = document.getElementById("startRoadmapBtn");
       const startConnectBtn = document.getElementById("startConnectBtn");
 
       // Animation containers for cards
       const aiCardAnimation = document.getElementById("aiCardAnimation");
+<<<<<<< HEAD
+      const assessmentCardAnimation = document.getElementById("assessmentCardAnimation");
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       const roadmapCardAnimation = document.getElementById("roadmapCardAnimation");
       const connectCardAnimation = document.getElementById("connectCardAnimation");
 
@@ -101,6 +122,12 @@
           body.classList.add("dark-theme");
           themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
           chatThemeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+<<<<<<< HEAD
+          if (assessmentThemeToggle) {
+            assessmentThemeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+          }
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
           if (roadmapThemeToggle) {
             roadmapThemeToggle.innerHTML = '<i class="fas fa-sun"></i>';
           }
@@ -445,6 +472,17 @@
         }, 500);
       });
 
+<<<<<<< HEAD
+      startAssessmentBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent card click
+        createBubbleBurst(assessmentCard);
+        setTimeout(() => {
+          showAssessmentPage();
+        }, 500);
+      });
+
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       startRoadmapBtn.addEventListener("click", (e) => {
         e.stopPropagation(); // Prevent card click
         createBubbleBurst(roadmapCard);
@@ -469,6 +507,16 @@
         }, 500);
       });
 
+<<<<<<< HEAD
+      assessmentCard.addEventListener("click", () => {
+        createBubbleBurst(assessmentCard);
+        setTimeout(() => {
+          showAssessmentPage();
+        }, 500);
+      });
+
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       roadmapCard.addEventListener("click", () => {
         createBubbleBurst(roadmapCard);
         setTimeout(() => {
@@ -556,6 +604,25 @@
         }, 500);
       }
 
+<<<<<<< HEAD
+      // Show assessment page
+      function showAssessmentPage() {
+        dashboardContainer.style.opacity = "0";
+        dashboardContainer.style.transform = "scale(0.95)";
+
+        setTimeout(() => {
+          dashboardContainer.style.display = "none";
+
+          assessmentNavbar.classList.add("active");
+
+          assessmentPage.classList.add("active");
+
+          startCareerAssessment();
+        }, 500);
+      }
+
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       // Show roadmap page
       function showRoadmapPage() {
         dashboardContainer.style.opacity = "0";
@@ -650,9 +717,17 @@
       // Go back to dashboard
       function goBackToDashboard() {
         chatPage.classList.remove("active");
+<<<<<<< HEAD
+        assessmentPage.classList.remove("active");
         roadmapPage.classList.remove("active");
 
         chatNavbar.classList.remove("active");
+        assessmentNavbar.classList.remove("active");
+=======
+        roadmapPage.classList.remove("active");
+
+        chatNavbar.classList.remove("active");
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
         roadmapNavbar.classList.remove("active");
 
         sidebar.classList.remove("active");
@@ -692,7 +767,11 @@
         profileDropdown.classList.remove("active");
 
         // Navigate back if needed
+<<<<<<< HEAD
+        if (chatPage.classList.contains("active") || assessmentPage.classList.contains("active") || roadmapPage.classList.contains("active")) {
+=======
         if (chatPage.classList.contains("active") || roadmapPage.classList.contains("active")) {
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
           goBackToDashboard();
         }
 
@@ -701,7 +780,11 @@
       }
 
       // Chat functions
+<<<<<<< HEAD
+      async function sendChatMessage() {
+=======
       function sendChatMessage() {
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
         const message = chatInput.value.trim();
         if (!message) return;
 
@@ -709,6 +792,53 @@
 
         chatInput.value = "";
 
+<<<<<<< HEAD
+        // Check if career assessment is in progress
+        if (assessmentInProgress) {
+          handleAssessmentResponse(message);
+          return;
+        }
+
+        // Check if career selection is pending
+        if (window.careerOptions) {
+          handleCareerSelection(message);
+          return;
+        }
+
+        // Check for assessment trigger
+        const lowerMessage = message.toLowerCase();
+        if (lowerMessage.includes('assessment') || lowerMessage.includes('career test') || lowerMessage.includes('evaluate me')) {
+          startCareerAssessment();
+          return;
+        }
+
+        showTypingIndicator();
+
+        try {
+          const response = await fetch('/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: message })
+          });
+
+          const data = await response.json();
+
+          removeTypingIndicator();
+
+          if (response.ok && data.status === 'success') {
+            addMessage(data.response, "ai");
+            addToChatHistory(message);
+          } else {
+            addMessage("I'm sorry, I'm having trouble responding right now. Please try again later.", "ai");
+          }
+        } catch (error) {
+          console.error('Error sending chat message:', error);
+          removeTypingIndicator();
+          addMessage("I'm sorry, I'm having trouble responding right now. Please try again later.", "ai");
+        }
+=======
         showTypingIndicator();
 
         setTimeout(() => {
@@ -718,6 +848,7 @@
 
           addToChatHistory(message);
         }, 1500);
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       }
 
       function addMessage(text, sender) {
@@ -881,6 +1012,9 @@
         ];
       }
 
+<<<<<<< HEAD
+
+=======
       // AI response generator
       function generateAIResponse(userMessage) {
         const lowerMessage = userMessage.toLowerCase();
@@ -912,6 +1046,7 @@
           return responses.future;
         }
       }
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
 
       // Initialize the application
       async function init() {
@@ -994,10 +1129,233 @@
         // Navigation event listeners
         backToDashboard.addEventListener("click", goBackToDashboard);
         backToDashboardFromRoadmap.addEventListener("click", goBackToDashboard);
+<<<<<<< HEAD
+        const backToDashboardFromAssessment = document.getElementById("backToDashboardFromAssessment");
+        if (backToDashboardFromAssessment) {
+          backToDashboardFromAssessment.addEventListener("click", goBackToDashboard);
+        }
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
 
         // Logout event listener
         logoutBtn.addEventListener("click", logout);
       }
 
+<<<<<<< HEAD
+      // Career Assessment Variables
+      let assessmentQuestions = [];
+      let currentAssessmentQuestion = 0;
+      let assessmentAnswers = {};
+      let assessmentInProgress = false;
+
+      // Career Assessment Functions
+      async function startCareerAssessment() {
+        try {
+          const response = await fetch('/get-assessment-questions');
+          const data = await response.json();
+
+          if (response.ok && data.status === 'success') {
+            assessmentQuestions = data.questions;
+            assessmentAnswers = {};
+            currentAssessmentQuestion = 0;
+            assessmentInProgress = true;
+
+            addMessage("Great! Let's start your career assessment. I'll ask you 10 questions to help identify the best career paths for you. You can answer them in any order - just let me know which question you'd like to answer first!", "ai");
+
+            showAssessmentOptions();
+          } else {
+            addMessage("Sorry, I'm having trouble starting the assessment right now. Please try again later.", "ai");
+          }
+        } catch (error) {
+          console.error('Error starting assessment:', error);
+          addMessage("Sorry, I'm having trouble starting the assessment right now. Please try again later.", "ai");
+        }
+      }
+
+      function showAssessmentOptions() {
+        if (currentAssessmentQuestion >= assessmentQuestions.length) {
+          // All questions answered, submit assessment
+          submitAssessment();
+          return;
+        }
+
+        const unansweredQuestions = assessmentQuestions.filter(q => !assessmentAnswers.hasOwnProperty(q.id));
+
+        if (unansweredQuestions.length === 0) {
+          submitAssessment();
+          return;
+        }
+
+        let optionsHTML = "Here are the remaining questions you can answer:\n\n";
+        unansweredQuestions.forEach((question, index) => {
+          optionsHTML += `${index + 1}. ${question.question}\n`;
+        });
+        optionsHTML += "\nReply with the number of the question you'd like to answer, or type 'done' to finish the assessment.";
+
+        addMessage(optionsHTML, "ai");
+      }
+
+      function handleAssessmentResponse(message) {
+        const lowerMessage = message.toLowerCase().trim();
+
+        if (lowerMessage === 'done' || lowerMessage === 'finish') {
+          submitAssessment();
+          return;
+        }
+
+        // Check if user selected a question number
+        const questionNumber = parseInt(message);
+        if (!isNaN(questionNumber) && questionNumber >= 1 && questionNumber <= assessmentQuestions.length) {
+          const questionIndex = questionNumber - 1;
+          const question = assessmentQuestions[questionIndex];
+
+          if (assessmentAnswers.hasOwnProperty(question.id)) {
+            addMessage(`You've already answered question ${questionNumber}. Please choose a different question or type 'done' to finish.`, "ai");
+            showAssessmentOptions();
+            return;
+          }
+
+          // Ask the specific question
+          addMessage(`Question ${questionNumber}: ${question.question}`, "ai");
+
+          // Store that we're waiting for this question's answer
+          assessmentAnswers[question.id] = null; // Placeholder
+          return;
+        }
+
+        // Check if we're waiting for a specific question answer
+        const waitingQuestion = assessmentQuestions.find(q => assessmentAnswers[q.id] === null);
+        if (waitingQuestion) {
+          // This is the answer to the current question
+          assessmentAnswers[waitingQuestion.id] = message;
+
+          addMessage(`Thanks for your answer! Question recorded.`, "ai");
+
+          currentAssessmentQuestion++;
+          showAssessmentOptions();
+          return;
+        }
+
+        // Default response
+        addMessage("Please reply with a question number (1-10) to answer that question, or type 'done' to finish the assessment.", "ai");
+      }
+
+      async function submitAssessment() {
+        assessmentInProgress = false;
+
+        addMessage("Great! I've collected your answers. Let me analyze them and provide you with personalized career suggestions. This may take a moment...", "ai");
+
+        showTypingIndicator();
+
+        try {
+          const response = await fetch('/submit-assessment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ answers: assessmentAnswers })
+          });
+
+          const data = await response.json();
+
+          removeTypingIndicator();
+
+          if (response.ok && data.status === 'success') {
+            displayCareerSuggestions(data.analysis);
+          } else {
+            addMessage("Sorry, I had trouble analyzing your assessment. Please try again later.", "ai");
+          }
+        } catch (error) {
+          console.error('Error submitting assessment:', error);
+          removeTypingIndicator();
+          addMessage("Sorry, I had trouble analyzing your assessment. Please try again later.", "ai");
+        }
+      }
+
+      function displayCareerSuggestions(analysis) {
+        let suggestionsHTML = `🎯 **Career Assessment Results**\n\n`;
+        suggestionsHTML += `${analysis.summary}\n\n`;
+        suggestionsHTML += `**Recommended Career Paths:**\n\n`;
+
+        analysis.careers.forEach((career, index) => {
+          suggestionsHTML += `${index + 1}. **${career.title}**\n`;
+          suggestionsHTML += `   ${career.description}\n`;
+          suggestionsHTML += `   💼 **Skills:** ${career.skills.join(', ')}\n`;
+          suggestionsHTML += `   🎓 **Education:** ${career.education}\n`;
+          suggestionsHTML += `   💰 **Salary Range:** ${career.salary_range}\n`;
+          suggestionsHTML += `   📈 **Outlook:** ${career.outlook}\n\n`;
+          suggestionsHTML += `   **Next Steps:**\n`;
+          career.action_steps.forEach(step => {
+            suggestionsHTML += `   • ${step}\n`;
+          });
+          suggestionsHTML += `\n`;
+        });
+
+        suggestionsHTML += `Reply with the number (1-3) of the career path you'd like to select as your primary career goal, or type 'none' if none appeal to you.`;
+
+        addMessage(suggestionsHTML, "ai");
+
+        // Store career options for selection
+        window.careerOptions = analysis.careers;
+      }
+
+      async function handleCareerSelection(message) {
+        const lowerMessage = message.toLowerCase().trim();
+
+        if (lowerMessage === 'none') {
+          addMessage("No problem! You can always retake the assessment later or explore other options. Feel free to ask me anything else about career guidance!", "ai");
+          window.careerOptions = null;
+          return;
+        }
+
+        const selectionNumber = parseInt(message);
+        if (!isNaN(selectionNumber) && selectionNumber >= 1 && selectionNumber <= 3 && window.careerOptions) {
+          const selectedCareer = window.careerOptions[selectionNumber - 1];
+
+          // Get user email from localStorage
+          const userEmail = localStorage.getItem("userEmail");
+          if (!userEmail) {
+            addMessage("I need to know your email to save your career selection. Please make sure you're logged in.", "ai");
+            return;
+          }
+
+          try {
+            const response = await fetch('/select-career', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                email: userEmail,
+                career_title: selectedCareer.title
+              })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.status === 'success') {
+              addMessage(`Perfect! I've saved "${selectedCareer.title}" as your primary career goal. You can view your updated profile in the top-right corner. Is there anything specific about this career path you'd like to know more about?`, "ai");
+
+              // Update profile details
+              updateProfileDetails();
+            } else {
+              addMessage("I saved your career selection, but there was an issue updating your profile. You can still see your selection in our conversation!", "ai");
+            }
+          } catch (error) {
+            console.error('Error saving career selection:', error);
+            addMessage("I saved your career selection, but there was an issue updating your profile. You can still see your selection in our conversation!", "ai");
+          }
+
+          window.careerOptions = null;
+          return;
+        }
+
+        addMessage("Please reply with a number (1-3) to select a career path, or 'none' if none appeal to you.", "ai");
+      }
+
       // Initialize when DOM is loaded
       document.addEventListener("DOMContentLoaded", init);
+=======
+      // Initialize when DOM is loaded
+      document.addEventListener("DOMContentLoaded", init);
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
