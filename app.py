@@ -255,6 +255,10 @@ def dashboard():
 def login():
     return render_template('login.html')
 
+@app.route("/connect")
+def connect():
+    return render_template("connect.html")
+
 
 # -------- SIGNUP -------- #
 @app.route('/signup', methods=['POST'])
