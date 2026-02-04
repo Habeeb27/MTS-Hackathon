@@ -1,6 +1,9 @@
       const themeToggle = document.getElementById("themeToggle");
       const chatThemeToggle = document.getElementById("chatThemeToggle");
+<<<<<<< HEAD
       const assessmentThemeToggle = document.getElementById("assessmentThemeToggle");
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       const roadmapThemeToggle = document.getElementById("roadmapThemeToggle");
       const historyBtn = document.getElementById("historyBtn");
       const newChatBtn = document.getElementById("newChatBtn");
@@ -10,13 +13,19 @@
       const questionnaireContainer = document.getElementById("questionnaireContainer");
       const cardsGrid = document.getElementById("cardsGrid");
       const aiChatCard = document.getElementById("aiChatCard");
+<<<<<<< HEAD
       const assessmentCard = document.getElementById("assessmentCard");
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       const roadmapCard = document.getElementById("roadmapCard");
       const connectCard = document.getElementById("connectCard");
       const chatPage = document.getElementById("chatPage");
       const chatNavbar = document.getElementById("chatNavbar");
+<<<<<<< HEAD
       const assessmentPage = document.getElementById("assessmentPage");
       const assessmentNavbar = document.getElementById("assessmentNavbar");
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       const roadmapPage = document.getElementById("roadmapPage");
       const roadmapNavbar = document.getElementById("roadmapNavbar");
       const dashboardContainer = document.getElementById("dashboardContainer");
@@ -41,13 +50,19 @@
 
       // The cards buttons
       const startChatBtn = document.getElementById("startChatBtn");
+<<<<<<< HEAD
       const startAssessmentBtn = document.getElementById("startAssessmentBtn");
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       const startRoadmapBtn = document.getElementById("startRoadmapBtn");
       const startConnectBtn = document.getElementById("startConnectBtn");
 
       // Animation containers for cards
       const aiCardAnimation = document.getElementById("aiCardAnimation");
+<<<<<<< HEAD
       const assessmentCardAnimation = document.getElementById("assessmentCardAnimation");
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       const roadmapCardAnimation = document.getElementById("roadmapCardAnimation");
       const connectCardAnimation = document.getElementById("connectCardAnimation");
 
@@ -107,9 +122,12 @@
           body.classList.add("dark-theme");
           themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
           chatThemeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+<<<<<<< HEAD
           if (assessmentThemeToggle) {
             assessmentThemeToggle.innerHTML = '<i class="fas fa-sun"></i>';
           }
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
           if (roadmapThemeToggle) {
             roadmapThemeToggle.innerHTML = '<i class="fas fa-sun"></i>';
           }
@@ -454,6 +472,7 @@
         }, 500);
       });
 
+<<<<<<< HEAD
       startAssessmentBtn.addEventListener("click", (e) => {
         e.stopPropagation(); // Prevent card click
         createBubbleBurst(assessmentCard);
@@ -462,6 +481,8 @@
         }, 500);
       });
 
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       startRoadmapBtn.addEventListener("click", (e) => {
         e.stopPropagation(); // Prevent card click
         createBubbleBurst(roadmapCard);
@@ -486,6 +507,7 @@
         }, 500);
       });
 
+<<<<<<< HEAD
       assessmentCard.addEventListener("click", () => {
         createBubbleBurst(assessmentCard);
         setTimeout(() => {
@@ -493,6 +515,8 @@
         }, 500);
       });
 
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       roadmapCard.addEventListener("click", () => {
         createBubbleBurst(roadmapCard);
         setTimeout(() => {
@@ -580,6 +604,7 @@
         }, 500);
       }
 
+<<<<<<< HEAD
       // Show assessment page
       function showAssessmentPage() {
         dashboardContainer.style.opacity = "0";
@@ -596,6 +621,8 @@
         }, 500);
       }
 
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       // Show roadmap page
       function showRoadmapPage() {
         dashboardContainer.style.opacity = "0";
@@ -690,11 +717,17 @@
       // Go back to dashboard
       function goBackToDashboard() {
         chatPage.classList.remove("active");
+<<<<<<< HEAD
         assessmentPage.classList.remove("active");
         roadmapPage.classList.remove("active");
 
         chatNavbar.classList.remove("active");
         assessmentNavbar.classList.remove("active");
+=======
+        roadmapPage.classList.remove("active");
+
+        chatNavbar.classList.remove("active");
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
         roadmapNavbar.classList.remove("active");
 
         sidebar.classList.remove("active");
@@ -734,7 +767,11 @@
         profileDropdown.classList.remove("active");
 
         // Navigate back if needed
+<<<<<<< HEAD
         if (chatPage.classList.contains("active") || assessmentPage.classList.contains("active") || roadmapPage.classList.contains("active")) {
+=======
+        if (chatPage.classList.contains("active") || roadmapPage.classList.contains("active")) {
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
           goBackToDashboard();
         }
 
@@ -743,7 +780,11 @@
       }
 
       // Chat functions
+<<<<<<< HEAD
       async function sendChatMessage() {
+=======
+      function sendChatMessage() {
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
         const message = chatInput.value.trim();
         if (!message) return;
 
@@ -751,6 +792,7 @@
 
         chatInput.value = "";
 
+<<<<<<< HEAD
         // Check if career assessment is in progress
         if (assessmentInProgress) {
           handleAssessmentResponse(message);
@@ -796,6 +838,17 @@
           removeTypingIndicator();
           addMessage("I'm sorry, I'm having trouble responding right now. Please try again later.", "ai");
         }
+=======
+        showTypingIndicator();
+
+        setTimeout(() => {
+          removeTypingIndicator();
+          const aiResponse = generateAIResponse(message);
+          addMessage(aiResponse, "ai");
+
+          addToChatHistory(message);
+        }, 1500);
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
       }
 
       function addMessage(text, sender) {
@@ -959,7 +1012,41 @@
         ];
       }
 
+<<<<<<< HEAD
 
+=======
+      // AI response generator
+      function generateAIResponse(userMessage) {
+        const lowerMessage = userMessage.toLowerCase();
+
+        // Simulated AI responses
+        const responses = {
+          career: "Based on your profile, I'd recommend exploring courses in that field. Would you like specific recommendations?",
+          goal: "That's a great career goal! Let me help you create a roadmap to achieve that.",
+          balance: "Balancing studies and income is crucial. I recommend exploring part-time remote work or freelancing opportunities.",
+          skill: "Skill development is key to career success. Based on your interests, I suggest focusing on both technical and soft skills.",
+          course: "For your educational path, I recommend courses that combine theoretical knowledge with practical applications.",
+          help: "I'm here to help! Tell me more about what specific areas you need assistance with.",
+          future: "Planning for the future is important. Let's discuss your long-term goals and create a step-by-step plan.",
+        };
+
+        if (lowerMessage.includes("career") || lowerMessage.includes("path")) {
+          return responses.career;
+        } else if (lowerMessage.includes("goal") || lowerMessage.includes("future")) {
+          return responses.goal;
+        } else if (lowerMessage.includes("balance") || lowerMessage.includes("income")) {
+          return responses.balance;
+        } else if (lowerMessage.includes("skill") || lowerMessage.includes("learn")) {
+          return responses.skill;
+        } else if (lowerMessage.includes("course") || lowerMessage.includes("study")) {
+          return responses.course;
+        } else if (lowerMessage.includes("help")) {
+          return responses.help;
+        } else {
+          return responses.future;
+        }
+      }
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
 
       // Initialize the application
       async function init() {
@@ -1042,15 +1129,19 @@
         // Navigation event listeners
         backToDashboard.addEventListener("click", goBackToDashboard);
         backToDashboardFromRoadmap.addEventListener("click", goBackToDashboard);
+<<<<<<< HEAD
         const backToDashboardFromAssessment = document.getElementById("backToDashboardFromAssessment");
         if (backToDashboardFromAssessment) {
           backToDashboardFromAssessment.addEventListener("click", goBackToDashboard);
         }
+=======
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
 
         // Logout event listener
         logoutBtn.addEventListener("click", logout);
       }
 
+<<<<<<< HEAD
       // Career Assessment Variables
       let assessmentQuestions = [];
       let currentAssessmentQuestion = 0;
@@ -1264,3 +1355,7 @@
 
       // Initialize when DOM is loaded
       document.addEventListener("DOMContentLoaded", init);
+=======
+      // Initialize when DOM is loaded
+      document.addEventListener("DOMContentLoaded", init);
+>>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
