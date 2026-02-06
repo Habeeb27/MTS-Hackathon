@@ -24,59 +24,85 @@
       <div class="circle-bg circle-3"></div>
       <div class="circle-bg circle-4"></div>
     </div>
+<!-- Main Navbar -->
+<nav class="navbar">
+  <div class="container nav-container">
+    <a href="/" class="logo">
+      <img
+        src="https://i.postimg.cc/ry3JjZwG/img.png"
+        alt="Pathfinder Logo"
+        class="logo-image"
+      />
+      <div class="logo-text">Pathfinder</div>
+    </a>
 
-    <nav class="navbar">
+    <ul class="nav-links">
+      <li>
+        <a href="#" class="profile-btn" id="profileLink">
+          <i class="fas fa-user-circle"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      <li>
+        <button class="logout-btn-nav" id="logoutBtnNav">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </li>
+      <li>
+        <button class="theme-toggle" id="themeToggle">
+          <i class="fas fa-moon"></i>
+        </button>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+    <!-- Profile Navbar -->
+    <nav class="profile-navbar" id="profileNavbar">
       <div class="container nav-container">
-<<<<<<< HEAD
         <a href="/" class="logo">
-=======
-        <a href="#" class="logo">
->>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
           <img
             src="https://i.postimg.cc/ry3JjZwG/img.png"
             alt="Pathfinder Logo"
             class="logo-image"
           />
-          <div class="logo-text">Pathfinder</div>
+          <div class="logo-text">My Profile</div>
         </a>
 
-        <ul class="nav-links">
-<<<<<<< HEAD
-          <li>
-            <!-- Mobile menu button -->
-            <button class="menu-btn" id="mobileMenuBtn">
-              <i class="fas fa-bars"></i>
-            </button>
-          </li>
-=======
->>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
-          <li class="profile-container">
-            <button class="profile-btn" id="profileBtn">
-              <i class="fas fa-user-circle"></i>
-              <span>Profile</span>
-            </button>
-            <div class="profile-dropdown" id="profileDropdown">
-              <div class="profile-header">
-                <div class="profile-name" id="profileName">User Name</div>
-                <div class="profile-email" id="profileEmail">
-                  user@example.com
-                </div>
-              </div>
-              <div class="profile-details" id="profileDetails">
-                <!-- User details will be shown here -->
-              </div>
-              <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i>
-                Logout
-              </button>
-            </div>
-          </li>
-          <li>
-            <button class="theme-toggle" id="themeToggle">
-              <i class="fas fa-moon"></i>
-            </button>
-          </li>
-        </ul>
+        <div class="chat-nav-controls">
+          <button class="back-btn" id="backToDashboardFromProfile">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Dashboard</span>
+          </button>
+          <button class="theme-toggle" id="profileThemeToggle">
+            <i class="fas fa-moon"></i>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Roadmap Navbar -->
+    <nav class="roadmap-navbar" id="roadmapNavbar">
+      <div class="container nav-container">
+        <a href="/" class="logo">
+          <img
+            src="https://i.postimg.cc/ry3JjZwG/img.png"
+            alt="Pathfinder Logo"
+            class="logo-image"
+          />
+          <div class="logo-text">Career Roadmap</div>
+        </a>
+
+        <div class="chat-nav-controls">
+          <button class="back-btn" id="backToDashboardFromRoadmap">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Dashboard</span>
+          </button>
+          <button class="theme-toggle" id="roadmapThemeToggle">
+            <i class="fas fa-moon"></i>
+          </button>
+        </div>
       </div>
     </nav>
 
@@ -101,7 +127,7 @@
               <i class="fas fa-history"></i>
             </button>
           </div>
-          <button class="back-btn" id="backToDashboard">
+          <button class="back-btn" id="backToDashboardFromChat">
             <i class="fas fa-arrow-left"></i>
             <span>Back to Dashboard</span>
           </button>
@@ -112,7 +138,6 @@
       </div>
     </nav>
 
-<<<<<<< HEAD
     <!-- Assessment Navbar -->
     <nav class="assessment-navbar" id="assessmentNavbar">
       <div class="container nav-container">
@@ -131,36 +156,6 @@
             <span>Back to Dashboard</span>
           </button>
           <button class="theme-toggle" id="assessmentThemeToggle">
-            <i class="fas fa-moon"></i>
-          </button>
-        </div>
-      </div>
-    </nav>
-
-=======
->>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
-    <!-- Roadmap Navbar -->
-    <nav class="roadmap-navbar" id="roadmapNavbar">
-      <div class="container nav-container">
-        <a href="/" class="logo">
-          <img
-            src="https://i.postimg.cc/ry3JjZwG/img.png"
-            alt="Pathfinder Logo"
-            class="logo-image"
-          />
-<<<<<<< HEAD
-          <div class="logo-text">Pathfinder Roadmap</div>
-=======
-          <div class="logo-text">Pathfinder</div>
->>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
-        </a>
-
-        <div class="chat-nav-controls">
-          <button class="back-btn" id="backToDashboardFromRoadmap">
-            <i class="fas fa-arrow-left"></i>
-            <span>Back to Dashboard</span>
-          </button>
-          <button class="theme-toggle" id="roadmapThemeToggle">
             <i class="fas fa-moon"></i>
           </button>
         </div>
@@ -192,9 +187,34 @@
       </div>
     </div>
 
-    <!-- Questionnaire Overlay -->
-    <div class="questionnaire-overlay" id="questionnaireOverlay">
-      <div class="questionnaire-container" id="questionnaireContainer"></div>
+    <!-- Edit Info Modal -->
+    <div class="edit-modal-overlay" id="editModalOverlay">
+      <div class="edit-modal-container" id="editModalContainer">
+        <div class="edit-modal-header">
+          <h3 class="edit-modal-title" id="editModalTitle">Edit Information</h3>
+          <button class="close-modal" id="closeEditModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form class="edit-form" id="editForm">
+          <div class="form-group">
+            <label for="editFieldLabel" class="form-label" id="editFieldLabel">Field</label>
+            <input type="text" class="form-input" id="editFieldInput" placeholder="Enter value">
+            <select class="form-select" id="editFieldSelect" style="display: none;">
+              <option value="">Select an option</option>
+              <option value="High School">High School</option>
+              <option value="Undergraduate">Undergraduate</option>
+              <option value="Graduate">Graduate</option>
+              <option value="Professional">Professional</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="modal-btn secondary" id="cancelEditBtn">Cancel</button>
+            <button type="submit" class="modal-btn primary" id="saveEditBtn">Save Changes</button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Main Dashboard -->
@@ -206,11 +226,7 @@
           <p class="action-question">What would you like to do today?</p>
         </div>
 
-<<<<<<< HEAD
-        <!-- 4 Cards Grid -->
-=======
-        <!-- 3 Cards Grid -->
->>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
+        <!-- 4 Cards Grid (2x2) -->
         <div class="cards-grid" id="cardsGrid">
           <!-- AI Chatbot Card -->
           <div class="simple-card" id="aiChatCard">
@@ -233,7 +249,23 @@
             </button>
           </div>
 
-<<<<<<< HEAD
+          <!-- Roadmap Card -->
+          <div class="simple-card" id="roadmapCard">
+            <div class="card-animation-container" id="roadmapCardAnimation"></div>
+            <div class="card-icon">
+              <i class="fas fa-road"></i>
+            </div>
+            <h3 class="card-title">View Your Roadmap</h3>
+            <p class="card-description">
+              Explore your personalized career roadmap with milestones and
+              actionable steps to reach your goals.
+            </p>
+            <button class="start-btn" id="startRoadmapBtn">
+              <span>View Roadmap</span>
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+
           <!-- Career Assessment Card -->
           <div class="simple-card" id="assessmentCard">
             <div class="card-animation-container" id="assessmentCardAnimation"></div>
@@ -242,62 +274,15 @@
             </div>
             <h3 class="card-title">Career Assessment</h3>
             <p class="card-description">
-              Take our comprehensive career assessment to discover your ideal
-              career path with personalized recommendations.
+              Take our comprehensive career assessment to discover your strengths,
+              interests, and ideal career paths.
             </p>
             <button class="start-btn" id="startAssessmentBtn">
               <span>Start Assessment</span>
-=======
-          <!-- Roadmap Card -->
-          <div class="simple-card" id="roadmapCard">
-            <div class="card-animation-container" id="roadmapCardAnimation"></div>
-            <div class="card-icon">
-              <i class="fas fa-road"></i>
-            </div>
-            <h3 class="card-title">View Your Roadmap</h3>
-            <p class="card-description">
-              Explore your personalized career roadmap with milestones and
-              actionable steps to reach your goals.
-            </p>
-            <button class="start-btn" id="startRoadmapBtn">
-              <span>View Roadmap</span>
->>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
               <i class="fas fa-arrow-right"></i>
             </button>
           </div>
 
-<<<<<<< HEAD
-          <!-- Roadmap Card -->
-          <div class="simple-card" id="roadmapCard">
-            <div class="card-animation-container" id="roadmapCardAnimation"></div>
-            <div class="card-icon">
-              <i class="fas fa-road"></i>
-            </div>
-            <h3 class="card-title">View Your Roadmap</h3>
-            <p class="card-description">
-              Explore your personalized career roadmap with milestones and
-              actionable steps to reach your goals.
-            </p>
-            <button class="start-btn" id="startRoadmapBtn">
-              <span>View Roadmap</span>
-              <i class="fas fa-arrow-right"></i>
-            </button>
-          </div>
-
-          <!-- Connect Card -->
-          <div class="simple-card" id="connectCard">
-            <div class="card-animation-container" id="connectCardAnimation"></div>
-            <div class="card-icon">
-              <i class="fas fa-users"></i>
-            </div>
-            <h3 class="card-title">Connect with Others</h3>
-            <p class="card-description">
-              Join our community to connect with peers, mentors, and
-              professionals in your desired career path.
-            </p>
-            <button class="start-btn" id="startConnectBtn">
-              <a href="/connect" style="text-decoration: none; color: inherit; display: block;">
-=======
           <!-- Connect Card -->
           <div class="simple-card" id="connectCard">
             <div class="card-animation-container" id="connectCardAnimation"></div>
@@ -311,11 +296,44 @@
             </p>
             <button class="start-btn" id="startConnectBtn">
               <a href="{{ url_for('connect') }}" style="text-decoration: none; color: inherit; display: block;">
->>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
                 <span>Connect Now</span>
                 <i class="fas fa-arrow-right"></i>
               </a>
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Page -->
+    <div class="profile-page" id="profilePage">
+      <div class="profile-container">
+        <div class="profile-center">
+          <div class="welcome-message">
+            <h2 class="welcome-text">My Profile</h2>
+            <p class="sub-welcome">Manage your personal information and career details</p>
+            <p class="action-question">Complete your profile for better career guidance</p>
+          </div>
+
+          <div class="profile-cards-grid" id="profileCardsGrid">
+            <!-- Profile cards will be here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Roadmap Page -->
+    <div class="roadmap-page" id="roadmapPage">
+      <div class="roadmap-container">
+        <div class="roadmap-center">
+          <div class="welcome-message">
+            <h2 class="welcome-text">Your Career Roadmap</h2>
+            <p class="sub-welcome">Follow these steps to achieve your career goals</p>
+            <p class="action-question">Your personalized career development path</p>
+          </div>
+
+          <div class="roadmap-cards-grid" id="roadmapCardsGrid">
+            <!-- Roadmap cards will enter here -->
           </div>
         </div>
       </div>
@@ -350,49 +368,24 @@
         </div>
       </div>
     </div>
-    <div class="roadmap-page" id="roadmapPage">
-      <div class="roadmap-container">
-        <div class="roadmap-center">
-          <div class="welcome-message">
-            <h2 class="welcome-text">Your Career Roadmap</h2>
-            <p class="sub-welcome">Follow these steps to achieve your career goals</p>
-            <p class="action-question">Start your journey with these key milestones</p>
-          </div>
 
-<<<<<<< HEAD
-    <!-- Assessment Page -->
+    <!-- Career Assessment Page -->
     <div class="assessment-page" id="assessmentPage">
       <div class="assessment-container">
         <div class="assessment-center">
           <div class="welcome-message">
             <h2 class="welcome-text">Career Assessment</h2>
-            <p class="sub-welcome">Discover your ideal career path</p>
-            <p class="action-question">Answer a few questions to get personalized recommendations</p>
+            <p class="sub-welcome">Discover your strengths, interests, and ideal career paths</p>
+            <p class="action-question">Start your journey with these assessment modules</p>
           </div>
 
-          <div class="assessment-content" id="assessmentContent">
-            <!-- Assessment content will be dynamically loaded here -->
+          <div class="assessment-cards-grid" id="assessmentCardsGrid">
+            <!-- Assessment cards will enter here -->
           </div>
         </div>
       </div>
     </div>
 
-    <div class="roadmap-page" id="roadmapPage">
-      <div class="roadmap-container">
-        <div class="roadmap-center">
-          <div class="welcome-message">
-            <h2 class="welcome-text">Your Career Roadmap</h2>
-            <p class="sub-welcome">Follow these steps to achieve your career goals</p>
-            <p class="action-question">Start your journey with these key milestones</p>
-          </div>
-
-=======
->>>>>>> 14434cc07aaed12711de37b217337c9331a0a6a9
-          <div class="roadmap-cards-grid" id="roadmapCardsGrid">
-          </div>
-        </div>
-      </div>
-    </div>
     <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
   </body>
 </html>

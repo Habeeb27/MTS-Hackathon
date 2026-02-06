@@ -1,4 +1,3 @@
-//The DOM Elements
 const themeToggle = document.getElementById("themeToggle");
 const mobileThemeToggle = document.getElementById("mobileThemeToggle");
 const menuToggle = document.getElementById("menuToggle");
@@ -53,6 +52,65 @@ const verificationInputs = document.querySelectorAll(".verification-input");
 let pendingVerificationUser = null;
 let verificationCode = null;
 let countdownTimer = null;
+
+// Function to store user data in localStorage
+function storeUserData(userData) {
+  try {
+    // Store individual items for easy access
+    if (userData.name) {
+      localStorage.setItem("userName", userData.name);
+    }
+    if (userData.email) {
+      localStorage.setItem("userEmail", userData.email);
+    }
+
+    // Also store as a complete user object for easy retrieval
+    localStorage.setItem("userData", JSON.stringify(userData));
+
+    console.log("User data stored in localStorage:", userData);
+    return true;
+  } catch (error) {
+    console.error("Error storing user data:", error);
+    return false;
+  }
+}
+
+// Function to get user data from localStorage
+function getUserData() {
+  try {
+    const userDataStr = localStorage.getItem("userData");
+    if (userDataStr) {
+      return JSON.parse(userDataStr);
+    }
+
+    // Fallback to individual items
+    const name = localStorage.getItem("userName");
+    const email = localStorage.getItem("userEmail");
+
+    if (name || email) {
+      return { name, email };
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error retrieving user data:", error);
+    return null;
+  }
+}
+
+// Function to clear user data from localStorage
+function clearUserData() {
+  try {
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userData");
+    console.log("User data cleared from localStorage");
+    return true;
+  } catch (error) {
+    console.error("Error clearing user data:", error);
+    return false;
+  }
+}
 
 function toggleTheme() {
   body.classList.toggle("dark-theme");
@@ -173,7 +231,7 @@ function generateVerificationCode() {
 async function sendVerificationEmail(email, code) {
   // This function is no longer needed - the backend handles email sending
   // Keeping it for compatibility but it should not be called
-  console.log('Email sending handled by backend');
+  console.log("Email sending handled by backend");
 }
 
 function startResendCountdown(seconds = 60) {
@@ -262,6 +320,12 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#mobileThemeToggle i").className = "fas fa-sun";
     document.getElementById("mobileThemeToggle").innerHTML =
       '<i class="fas fa-sun"></i> Toggle Theme';
+  }
+
+  // Load user data from localStorage and pre-fill login form if available
+  const userData = getUserData();
+  if (userData && userData.email) {
+    document.getElementById("loginEmail").value = userData.email;
   }
 
   loginFormContainer.style.display = "block";
@@ -360,20 +424,24 @@ resendCodeBtn.addEventListener("click", async (e) => {
   submitBtn.disabled = true;
 
   try {
-    const response = await fetch('/resend-code', {
-      method: 'POST',
+    const response = await fetch("/resend-code", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email: pendingVerificationUser.email
-      })
+        email: pendingVerificationUser.email,
+      }),
     });
 
     const data = await response.json();
 
     if (response.ok) {
-      showMessage(verificationMessage, "New verification code sent!", "success");
+      showMessage(
+        verificationMessage,
+        "New verification code sent!",
+        "success",
+      );
       startResendCountdown(60);
     } else {
       showMessage(
@@ -419,15 +487,15 @@ loginFormElement.addEventListener("submit", async (e) => {
   submitBtn.disabled = true;
 
   try {
-    const response = await fetch('/login', {
-      method: 'POST',
+    const response = await fetch("/login", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         loginEmail: email,
-        loginPassword: password
-      })
+        loginPassword: password,
+      }),
     });
 
     const data = await response.json();
@@ -435,12 +503,15 @@ loginFormElement.addEventListener("submit", async (e) => {
     if (response.ok) {
       showMessage(loginMessage, data.message, "success");
 
-      // Store user email in localStorage for dashboard use
-      localStorage.setItem('userEmail', email);
+      // Store user data in localStorage
+      const userData = {
+        name: data.user?.name || email.split("@")[0],
+        email: email,
+      };
+      storeUserData(userData);
 
       setTimeout(() => {
-        // Redirect to dashboard on successful login
-        window.location.href = '/dashboard';
+        window.location.href = "/dashboard";
 
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
@@ -499,23 +570,22 @@ signupFormElement.addEventListener("submit", async (e) => {
 
   try {
     // Call backend signup endpoint
-    const response = await fetch('/signup', {
-      method: 'POST',
+    const response = await fetch("/signup", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         signupName: name,
         signupEmail: email,
-        signupPassword: password
-      })
+        signupPassword: password,
+      }),
     });
 
     const data = await response.json();
 
     if (response.ok) {
-      // Store user data for verification process
-      pendingVerificationUser = { name, email, password };
+      pendingVerificationUser = { name, email };
 
       verificationEmailSpan.textContent = email;
       showForm(verificationFormContainer);
@@ -525,17 +595,17 @@ signupFormElement.addEventListener("submit", async (e) => {
       signupFormElement.reset();
       confirmPasswordGroup.classList.remove("visible");
     } else {
-      showMessage(signupMessage, data.message || "Failed to create account", "error");
+      showMessage(
+        signupMessage,
+        data.message || "Failed to create account",
+        "error",
+      );
     }
 
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
   } catch (error) {
-    showMessage(
-      signupMessage,
-      "An error occurred. Please try again.",
-      "error",
-    );
+    showMessage(signupMessage, "An error occurred. Please try again.", "error");
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
   }
@@ -557,15 +627,15 @@ verificationFormElement.addEventListener("submit", async (e) => {
   submitBtn.disabled = true;
 
   try {
-    const response = await fetch('/verify', {
-      method: 'POST',
+    const response = await fetch("/verify", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         email: pendingVerificationUser.email,
-        code: enteredCode
-      })
+        code: enteredCode,
+      }),
     });
 
     const data = await response.json();
@@ -576,6 +646,15 @@ verificationFormElement.addEventListener("submit", async (e) => {
         "Email verified successfully! Your account has been created.",
         "success",
       );
+
+      // Store user data in localStorage after successful verification
+      if (pendingVerificationUser) {
+        const userData = {
+          name: pendingVerificationUser.name,
+          email: pendingVerificationUser.email,
+        };
+        storeUserData(userData);
+      }
 
       setTimeout(() => {
         alert(
@@ -588,7 +667,11 @@ verificationFormElement.addEventListener("submit", async (e) => {
         submitBtn.disabled = false;
       }, 1000);
     } else {
-      showMessage(verificationMessage, data.message || "Invalid verification code", "error");
+      showMessage(
+        verificationMessage,
+        data.message || "Invalid verification code",
+        "error",
+      );
       verificationInputs.forEach((input) => input.classList.add("error"));
       submitBtn.textContent = originalText;
       submitBtn.disabled = false;
@@ -610,12 +693,20 @@ forgotPasswordFormElement.addEventListener("submit", async (e) => {
   const email = document.getElementById("forgotEmail").value.trim();
 
   if (!email) {
-    showMessage(forgotPasswordMessage, "Please enter your email address", "error");
+    showMessage(
+      forgotPasswordMessage,
+      "Please enter your email address",
+      "error",
+    );
     return;
   }
 
   if (!isValidEmail(email)) {
-    showMessage(forgotPasswordMessage, "Please enter a valid email address", "error");
+    showMessage(
+      forgotPasswordMessage,
+      "Please enter a valid email address",
+      "error",
+    );
     return;
   }
 
@@ -625,14 +716,14 @@ forgotPasswordFormElement.addEventListener("submit", async (e) => {
   submitBtn.disabled = true;
 
   try {
-    const response = await fetch('/forgot-password', {
-      method: 'POST',
+    const response = await fetch("/forgot-password", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        forgotEmail: email
-      })
+        forgotEmail: email,
+      }),
     });
 
     const data = await response.json();
@@ -652,12 +743,20 @@ forgotPasswordFormElement.addEventListener("submit", async (e) => {
         showForm(loginFormContainer);
       }, 3000);
     } else {
-      showMessage(forgotPasswordMessage, data.message || "Failed to send reset code", "error");
+      showMessage(
+        forgotPasswordMessage,
+        data.message || "Failed to send reset code",
+        "error",
+      );
       submitBtn.textContent = originalText;
       submitBtn.disabled = false;
     }
   } catch (error) {
-    showMessage(forgotPasswordMessage, "An error occurred. Please try again.", "error");
+    showMessage(
+      forgotPasswordMessage,
+      "An error occurred. Please try again.",
+      "error",
+    );
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
   }
