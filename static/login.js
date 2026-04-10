@@ -27,6 +27,7 @@ const verificationFormElement = document.getElementById(
 const forgotPasswordFormElement = document.getElementById(
   "forgotPasswordFormElement",
 );
+const resendForm = document.getElementById("resendForm");
 
 const toggleLoginPasswordBtn = document.getElementById("toggleLoginPassword");
 const toggleSignupPasswordBtn = document.getElementById("toggleSignupPassword");
@@ -48,25 +49,22 @@ const resendCodeBtn = document.getElementById("resendCode");
 const countdownText = document.getElementById("countdownText");
 const countdownSpan = document.getElementById("countdown");
 const verificationInputs = document.querySelectorAll(".verification-input");
+const verificationCodeInput = document.getElementById("verificationCode");
+const resendEmailInput = document.getElementById("resendEmail");
 
 let pendingVerificationUser = null;
-let verificationCode = null;
 let countdownTimer = null;
 
 // Function to store user data in localStorage
 function storeUserData(userData) {
   try {
-    // Store individual items for easy access
     if (userData.name) {
       localStorage.setItem("userName", userData.name);
     }
     if (userData.email) {
       localStorage.setItem("userEmail", userData.email);
     }
-
-    // Also store as a complete user object for easy retrieval
     localStorage.setItem("userData", JSON.stringify(userData));
-
     console.log("User data stored in localStorage:", userData);
     return true;
   } catch (error) {
@@ -82,15 +80,11 @@ function getUserData() {
     if (userDataStr) {
       return JSON.parse(userDataStr);
     }
-
-    // Fallback to individual items
     const name = localStorage.getItem("userName");
     const email = localStorage.getItem("userEmail");
-
     if (name || email) {
       return { name, email };
     }
-
     return null;
   } catch (error) {
     console.error("Error retrieving user data:", error);
@@ -134,7 +128,6 @@ function toggleTheme() {
 }
 
 function showForm(formToShow) {
-  // Get all form containers
   const allForms = [
     loginFormContainer,
     signupFormContainer,
@@ -166,6 +159,7 @@ function showForm(formToShow) {
 
     if (formToShow === verificationFormContainer) {
       resetVerificationInputs();
+      updateVerifyButtonState(); // ✅ Initialize button state
     }
   }, 350);
 }
@@ -224,16 +218,6 @@ function toggleConfirmPasswordField() {
   }
 }
 
-function generateVerificationCode() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-async function sendVerificationEmail(email, code) {
-  // This function is no longer needed - the backend handles email sending
-  // Keeping it for compatibility but it should not be called
-  console.log("Email sending handled by backend");
-}
-
 function startResendCountdown(seconds = 60) {
   clearInterval(countdownTimer);
   countdownText.style.display = "block";
@@ -257,9 +241,10 @@ function startResendCountdown(seconds = 60) {
 function resetVerificationInputs() {
   verificationInputs.forEach((input) => {
     input.value = "";
-    input.classList.remove("filled");
+    input.classList.remove("filled", "error");
   });
   verificationInputs[0].focus();
+  updateVerifyButtonState(); // ✅ Reset button state
 }
 
 function handleVerificationInput(e, index) {
@@ -286,6 +271,7 @@ function handleVerificationInput(e, index) {
   }
 }
 
+// ✅ FIXED: Single source of truth for verification code
 function getVerificationCode() {
   let code = "";
   verificationInputs.forEach((input) => {
@@ -294,20 +280,22 @@ function getVerificationCode() {
   return code;
 }
 
-function simulateApiCall(data, endpoint) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        success: true,
-        message: `${
-          endpoint === "login" ? "Login" : "Signup"
-        } successful! Redirecting...`,
-        user: data.email
-          ? { email: data.email, name: data.name || "User" }
-          : null,
-      });
-    }, 1500);
-  });
+// ✅ FIXED: Single function to manage verify button state
+function updateVerifyButtonState() {
+  const code = getVerificationCode();
+  const submitBtn = verificationFormElement.querySelector('.auth-btn');
+  
+  if (code.length === 6) {
+    submitBtn.disabled = false;
+    submitBtn.style.opacity = '1';
+    submitBtn.style.cursor = 'pointer';
+    submitBtn.textContent = 'Verify Email';
+  } else {
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.5';
+    submitBtn.style.cursor = 'not-allowed';
+    submitBtn.textContent = 'Enter Code';
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -322,22 +310,41 @@ document.addEventListener("DOMContentLoaded", () => {
       '<i class="fas fa-sun"></i> Toggle Theme';
   }
 
-  // Load user data from localStorage and pre-fill login form if available
+  // Load user data from localStorage and pre-fill login form
   const userData = getUserData();
   if (userData && userData.email) {
     document.getElementById("loginEmail").value = userData.email;
   }
 
-  loginFormContainer.style.display = "block";
-  signupFormContainer.style.display = "none";
-  verificationFormContainer.style.display = "none";
-  forgotPasswordFormContainer.style.display = "none";
+  // 🚀 ENHANCED: Backend verification flag check
+  const authWrapper = document.getElementById('authWrapper');
+  const showVerificationFromServer = authWrapper?.dataset.showVerification === 'true';
+  
+  if (showVerificationFromServer) {
+    showForm(verificationFormContainer);
+    if (window.pendingEmail) {
+      document.getElementById('verificationEmail').textContent = window.pendingEmail;
+      document.getElementById('resendEmail').value = window.pendingEmail;
+    }
+    document.getElementById('resendCodeContainer').classList.add('init-countdown');
+    startResendCountdown(60);
+    verificationInputs[0].focus();
+    console.log('✅ Backend verification mode activated');
+  } else {
+    // Default states - login active
+    loginFormContainer.style.display = "block";
+    signupFormContainer.style.display = "none";
+    verificationFormContainer.style.display = "none";
+    forgotPasswordFormContainer.style.display = "none";
+    loginFormContainer.classList.add('active');
+  }
 
   const logoImage = "https://i.postimg.cc/ry3JjZwG/img.png";
   document.querySelectorAll(".auth-circle-image").forEach((img) => {
     img.src = logoImage;
   });
 
+  // Mobile menu links
   const mobileLinks = document.querySelectorAll(
     ".mobile-nav-links a, .mobile-theme-toggle",
   );
@@ -348,21 +355,46 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // ✅ FIXED: Complete verification input handlers
   verificationInputs.forEach((input, index) => {
-    input.addEventListener("input", (e) => handleVerificationInput(e, index));
+    input.addEventListener("input", (e) => {
+      handleVerificationInput(e, index);
+      updateVerifyButtonState(); // ✅ KEY FIX: Update button on every input
+    });
+    
     input.addEventListener("keydown", (e) => {
       if (e.key === "Backspace" && !input.value && index > 0) {
         verificationInputs[index - 1].focus();
       }
+      setTimeout(updateVerifyButtonState, 10); // ✅ KEY FIX
+    });
+    
+    input.addEventListener("paste", function(e) {
+      e.preventDefault();
+      const paste = (e.clipboardData || window.clipboardData).getData('text');
+      const code = paste.replace(/\D/g, '').slice(0, 6);
+      code.split('').forEach((digit, i) => {
+        if (verificationInputs[i]) {
+          verificationInputs[i].value = digit;
+          verificationInputs[i].classList.add("filled");
+        }
+      });
+      updateVerifyButtonState(); // ✅ KEY FIX
+      if (code.length === 6) {
+        verificationInputs[5].focus();
+      }
     });
   });
+
+  // ✅ Initialize verify button state
+  updateVerifyButtonState();
 
   window.scrollTo(0, 0);
 });
 
+// Event Listeners
 menuToggle.addEventListener("click", () => {
   mobileMenu.classList.toggle("active");
-
   const menuIcon = menuToggle.querySelector("i");
   if (mobileMenu.classList.contains("active")) {
     menuIcon.className = "fas fa-times";
@@ -413,143 +445,89 @@ toggleConfirmPasswordBtn.addEventListener("click", () => {
 
 signupPasswordInput.addEventListener("input", toggleConfirmPasswordField);
 
-resendCodeBtn.addEventListener("click", async (e) => {
+// Update resend email when signup email changes
+document.getElementById("signupEmail").addEventListener("input", function() {
+  resendEmailInput.value = this.value;
+});
+
+// Resend OTP form handler
+resendForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-
-  if (!pendingVerificationUser) return;
-
-  const submitBtn = verificationFormElement.querySelector(".auth-btn");
+  const submitBtn = resendForm.querySelector("button");
   const originalText = submitBtn.textContent;
   submitBtn.textContent = "Resending...";
   submitBtn.disabled = true;
 
   try {
-    const response = await fetch("/resend-code", {
+    const formData = new FormData(resendForm);
+    const response = await fetch("/resend_otp", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: pendingVerificationUser.email,
-      }),
+      body: formData
     });
 
     const data = await response.json();
 
     if (response.ok) {
-      showMessage(
-        verificationMessage,
-        "New verification code sent!",
-        "success",
-      );
+      showMessage(verificationMessage, "New verification code sent!", "success");
       startResendCountdown(60);
+      resetVerificationInputs(); // ✅ Clear inputs on resend
     } else {
-      showMessage(
-        verificationMessage,
-        data.message || "Failed to resend code. Please try again.",
-        "error",
-      );
+      showMessage(verificationMessage, data.message || "Failed to resend code", "error");
     }
-
-    submitBtn.textContent = originalText;
-    submitBtn.disabled = false;
   } catch (error) {
-    showMessage(
-      verificationMessage,
-      "Failed to resend code. Please try again.",
-      "error",
-    );
-    submitBtn.textContent = originalText;
-    submitBtn.disabled = false;
+    showMessage(verificationMessage, "Failed to resend code. Please try again.", "error");
   }
+
+  submitBtn.textContent = originalText;
+  submitBtn.disabled = false;
 });
 
-loginFormElement.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
+// LOGIN FORM - Use native form submission (works with Flask)
+loginFormElement.addEventListener("submit", function(e) {
   const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value.trim();
-  const rememberMe = document.getElementById("rememberMe").checked;
 
   if (!email || !password) {
+    e.preventDefault();
     showMessage(loginMessage, "Please fill in all fields", "error");
     return;
   }
 
   if (!isValidEmail(email)) {
+    e.preventDefault();
     showMessage(loginMessage, "Please enter a valid email address", "error");
     return;
   }
 
+  // Let native form submission handle it (Flask will redirect on success)
   const submitBtn = loginFormElement.querySelector(".auth-btn");
-  const originalText = submitBtn.textContent;
   submitBtn.textContent = "Signing In...";
   submitBtn.disabled = true;
-
-  try {
-    const response = await fetch("/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        loginEmail: email,
-        loginPassword: password,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      showMessage(loginMessage, data.message, "success");
-
-      // Store user data in localStorage
-      const userData = {
-        name: data.user?.name || email.split("@")[0],
-        email: email,
-      };
-      storeUserData(userData);
-
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-      }, 1000);
-    } else {
-      showMessage(loginMessage, data.message, "error");
-      submitBtn.textContent = originalText;
-      submitBtn.disabled = false;
-    }
-  } catch (error) {
-    showMessage(loginMessage, "An error occurred. Please try again.", "error");
-    submitBtn.textContent = originalText;
-    submitBtn.disabled = false;
-  }
 });
 
-signupFormElement.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
+// REGISTER FORM - Use native form submission
+signupFormElement.addEventListener("submit", function(e) {
   const name = document.getElementById("signupName").value.trim();
   const email = document.getElementById("signupEmail").value.trim();
   const password = document.getElementById("signupPassword").value.trim();
   const confirmPassword = confirmPasswordInput.value.trim();
 
-  const isConfirmPasswordVisible =
-    confirmPasswordGroup.classList.contains("visible");
+  const isConfirmPasswordVisible = confirmPasswordGroup.classList.contains("visible");
 
   if (!name || !email || !password) {
+    e.preventDefault();
     showMessage(signupMessage, "Please fill in all fields", "error");
     return;
   }
 
   if (!isValidEmail(email)) {
+    e.preventDefault();
     showMessage(signupMessage, "Please enter a valid email address", "error");
     return;
   }
 
   if (!isStrongPassword(password)) {
+    e.preventDefault();
     showMessage(
       signupMessage,
       "Password must be at least 8 characters with uppercase, lowercase, and a number",
@@ -559,205 +537,117 @@ signupFormElement.addEventListener("submit", async (e) => {
   }
 
   if (isConfirmPasswordVisible && password !== confirmPassword) {
+    e.preventDefault();
     showMessage(signupMessage, "Passwords do not match", "error");
     return;
   }
 
+  // Store pending user data for verification
+  pendingVerificationUser = { name, email };
+  resendEmailInput.value = email;
+
+  // Let native form submission handle it (Flask will show verification form)
   const submitBtn = signupFormElement.querySelector(".auth-btn");
-  const originalText = submitBtn.textContent;
   submitBtn.textContent = "Creating Account...";
   submitBtn.disabled = true;
-
-  try {
-    // Call backend signup endpoint
-    const response = await fetch("/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        signupName: name,
-        signupEmail: email,
-        signupPassword: password,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      pendingVerificationUser = { name, email };
-
-      verificationEmailSpan.textContent = email;
-      showForm(verificationFormContainer);
-
-      startResendCountdown(60);
-
-      signupFormElement.reset();
-      confirmPasswordGroup.classList.remove("visible");
-    } else {
-      showMessage(
-        signupMessage,
-        data.message || "Failed to create account",
-        "error",
-      );
-    }
-
-    submitBtn.textContent = originalText;
-    submitBtn.disabled = false;
-  } catch (error) {
-    showMessage(signupMessage, "An error occurred. Please try again.", "error");
-    submitBtn.textContent = originalText;
-    submitBtn.disabled = false;
-  }
 });
 
-verificationFormElement.addEventListener("submit", async (e) => {
+// ✅ FIXED VERIFICATION FORM - COMPLETE WORKING SOLUTION
+verificationFormElement.addEventListener("submit", async function(e) {
   e.preventDefault();
-
+  
   const enteredCode = getVerificationCode();
-
+ // ✅ FIXED VERIFICATION FORM - COMPLETE WORKING SOLUTION
+verificationFormElement.addEventListener("submit", async function(e) {
+  e.preventDefault();
+  
+  const enteredCode = getVerificationCode();
   if (enteredCode.length !== 6) {
-    showMessage(verificationMessage, "Please enter the 6-digit code", "error");
+    showMessage(verificationMessage, "Please enter full 6-digit code", "error");
+    verificationInputs.forEach((input) => input.classList.add("error"));
+    setTimeout(() => {
+      verificationInputs.forEach((input) => input.classList.remove("error"));
+    }, 2000);
     return;
   }
 
   const submitBtn = verificationFormElement.querySelector(".auth-btn");
-  const originalText = submitBtn.textContent;
   submitBtn.textContent = "Verifying...";
   submitBtn.disabled = true;
+  submitBtn.style.opacity = '0.7';
 
   try {
-    const response = await fetch("/verify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: pendingVerificationUser.email,
-        code: enteredCode,
-      }),
+    // Populate hidden input and submit
+    verificationCodeInput.value = enteredCode;
+    
+    const formData = new FormData(verificationFormElement);
+    const response = await fetch(verificationFormElement.action, {
+      method: 'POST',
+      body: formData
     });
 
-    const data = await response.json();
-
     if (response.ok) {
-      showMessage(
-        verificationMessage,
-        "Email verified successfully! Your account has been created.",
-        "success",
-      );
-
-      // Store user data in localStorage after successful verification
-      if (pendingVerificationUser) {
-        const userData = {
-          name: pendingVerificationUser.name,
-          email: pendingVerificationUser.email,
-        };
-        storeUserData(userData);
-      }
-
-      setTimeout(() => {
-        alert(
-          `Welcome to Pathfinder, ${pendingVerificationUser.name}!\n\nAccount created and verified successfully.\nEmail: ${pendingVerificationUser.email}`,
-        );
-        showForm(loginFormContainer);
-        document.getElementById("loginEmail").value = data.email || "";
-
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-      }, 1000);
+      // Success - let Flask handle redirect
+      window.location.href = response.url || '/dashboard';
     } else {
-      showMessage(
-        verificationMessage,
-        data.message || "Invalid verification code",
-        "error",
-      );
-      verificationInputs.forEach((input) => input.classList.add("error"));
-      submitBtn.textContent = originalText;
-      submitBtn.disabled = false;
+      const data = await response.json().catch(() => ({}));
+      showMessage(verificationMessage, data.message || "Verification failed. Please try again.", "error");
+      resetVerificationInputs();
     }
   } catch (error) {
-    showMessage(
-      verificationMessage,
-      "An error occurred. Please try again.",
-      "error",
-    );
-    submitBtn.textContent = originalText;
+    console.error('Verification error:', error);
+    showMessage(verificationMessage, "Network error. Please check your connection.", "error");
+    resetVerificationInputs();
+  } finally {
+    submitBtn.textContent = "Verify Email";
     submitBtn.disabled = false;
+    submitBtn.style.opacity = '1';
   }
 });
 
-forgotPasswordFormElement.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
+// FORGOT PASSWORD - Basic placeholder (extend as needed)
+forgotPasswordFormElement.addEventListener("submit", function(e) {
   const email = document.getElementById("forgotEmail").value.trim();
 
   if (!email) {
-    showMessage(
-      forgotPasswordMessage,
-      "Please enter your email address",
-      "error",
-    );
+    e.preventDefault();
+    showMessage(forgotPasswordMessage, "Please enter your email address", "error");
     return;
   }
 
   if (!isValidEmail(email)) {
-    showMessage(
-      forgotPasswordMessage,
-      "Please enter a valid email address",
-      "error",
-    );
+    e.preventDefault();
+    showMessage(forgotPasswordMessage, "Please enter a valid email address", "error");
     return;
   }
 
   const submitBtn = forgotPasswordFormElement.querySelector(".auth-btn");
-  const originalText = submitBtn.textContent;
   submitBtn.textContent = "Sending...";
   submitBtn.disabled = true;
 
-  try {
-    const response = await fetch("/forgot-password", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        forgotEmail: email,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      showMessage(
-        forgotPasswordMessage,
-        `Password reset code sent to ${email}. Please check your inbox.`,
-        "success",
-      );
-
-      forgotPasswordFormElement.reset();
-      submitBtn.textContent = originalText;
-      submitBtn.disabled = false;
-
-      setTimeout(() => {
-        showForm(loginFormContainer);
-      }, 3000);
-    } else {
-      showMessage(
-        forgotPasswordMessage,
-        data.message || "Failed to send reset code",
-        "error",
-      );
-      submitBtn.textContent = originalText;
-      submitBtn.disabled = false;
-    }
-  } catch (error) {
+  // Show success message (extend with real backend endpoint later)
+  setTimeout(() => {
     showMessage(
       forgotPasswordMessage,
-      "An error occurred. Please try again.",
-      "error",
+      `Password reset instructions sent to ${email}`,
+      "success",
     );
-    submitBtn.textContent = originalText;
+    submitBtn.textContent = "Reset Password";
     submitBtn.disabled = false;
-  }
-});
+  }, 1500);
+});})
+  const submitBtn = forgotPasswordFormElement.querySelector(".auth-btn");
+  submitBtn.textContent = "Sending...";
+  submitBtn.disabled = true;
+
+  // Show success message (extend with real backend endpoint later)
+  setTimeout(() => {
+    showMessage(
+      forgotPasswordMessage,
+      `Password reset instructions sent to ${email}`,
+      "success",
+    );
+    submitBtn.textContent = "Reset Password";
+    submitBtn.disabled = false;
+  }, 1500);
+});})

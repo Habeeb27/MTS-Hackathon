@@ -1,4 +1,4 @@
-from google import genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 
@@ -8,7 +8,7 @@ load_dotenv()
 # Get the API key from the environment
 api_key = os.getenv("GOOGLE_API_KEY")
 
-client = genai.Client(api_key=api_key)
+genai.configure(api_key=api_key)
 
 def get_ai_response(user_message):
     """
@@ -21,10 +21,8 @@ def get_ai_response(user_message):
         str: The AI's response text.
     """
     try:
-        response = client.models.generate_content(
-            model="models/gemini-2.5-flash",
-            contents=user_message
-        )
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(user_message)
         return response.text
     except Exception as e:
         print(f"Error generating AI response: {e}")
@@ -130,10 +128,8 @@ Keep explanations detailed but concise. Focus on realistic, achievable career pa
 """
 
     try:
-        response = client.models.generate_content(
-            model="models/gemini-2.5-flash",
-            contents=prompt
-        )
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt)
 
         # Parse the JSON response
         import json
