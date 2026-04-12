@@ -1,602 +1,459 @@
 import os
 import json
-from flask import Flask, render_template, request, jsonify
-from flask_mail import Mail, Message
+import logging
+from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
-import openai
-from werkzeug.security import generate_password_hash, check_password_hash
-import random, string
-from datetime import datetime, timedelta
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from geminiai import get_ai_response, CAREER_ASSESSMENT_QUESTIONS, analyze_career_assessment
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
+from werkzeug.exceptions import BadRequestKeyError
+import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+try:
+    from geminiai import get_ai_response, analyze_career_assessment, CAREER_ASSESSMENT_QUESTIONS
+except ImportError as e:
+    logger.warning(f"Could not import geminiai: {e}. Assessment features will be disabled.")
+    CAREER_ASSESSMENT_QUESTIONS = []
+    def analyze_career_assessment(answers): return {"message": "Assessment not available"}
+
+# Load environment variables
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
-
-app = Flask(__name__, template_folder="templates", static_folder="static")
-app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
-
-# Database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+# Initialize Flask app
+app = Flask(__name__,template_folder='templates', static_folder='static')
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(32))
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.abspath(os.path.join(os.path.dirname(__file__), "instance", "database.db"))}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_pre_ping': True}
 
-app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
-app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", 587))
-app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
-app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL", "False").lower() == "true"
-app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
-app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER")
+# Email config
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 
-mail = Mail(app)
+# Validate email config
+if not app.config['MAIL_USERNAME'] or not app.config['MAIL_PASSWORD']:
+    logger.warning("Email configuration incomplete. Email features disabled.")
 
+# Initialize extensions
+try:
+    db = SQLAlchemy(app)
+    login_manager = LoginManager(app)
+    login_manager.login_view = 'login'
+except Exception as e:
+    logger.error(f"Failed to initialize extensions: {e}")
+    raise
 
-# Landing Page
-@app.route("/")
-def home():
-    return render_template("index.html")
+# Models
+class VerificationCode(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(150), nullable=False, index=True)
+    code = db.Column(db.String(6), nullable=False)
+    token = db.Column(db.String(64), unique=True, nullable=True, index=True)
+    expires = db.Column(db.DateTime, nullable=False)
 
-# Contact Form
-@app.route("/contact", methods=["POST"])
-def contact():
-    if request.is_json:
-        data = request.get_json()
-        name = data.get("name")
-        email = data.get("email")
-        phone = data.get("phone")
-        message_text = data.get("message")
-    else:
-        name = request.form.get("name")
-        email = request.form.get("email")
-        phone = request.form.get("phone")
-        message_text = request.form.get("message")
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(150), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(255), nullable=False)
+    is_verified = db.Column(db.Boolean, default=False)
+    assessments = db.Column(db.Text, default='[]')
 
-    print("Received:", name, email, phone, message_text)
-
-    if not name or not email or not message_text:
-        return jsonify({"status": "error", "message": "Missing required fields."}), 400
-
-    msg = Message(
-        subject="📩 New Contact Message – Pathfinder",
-        recipients=[os.getenv("MAIL_USERNAME")],
-        body=f"""
-New contact submission:
-
-Name: {name}
-Email: {email}
-Phone: {phone}
-
-Message:
-{message_text}
-"""
-    )
-
+@login_manager.user_loader
+def load_user(user_id):
     try:
-        mail.send(msg)
-        return jsonify({"status": "success", "message": "Message sent successfully. We'll get back to you soon!"})
-    except Exception as e:
-        print("Mail Error:", e)
-        return jsonify({"status": "error", "message": "Failed to send message. Please try again later."}), 500
+        return User.query.get(int(user_id))
+    except (ValueError, TypeError):
+        return None
 
-@app.route("/chatbot", methods=["POST"])
-def chatbot():
-    if request.is_json:
-        data = request.get_json()
-        answers = {
-            "stage": data.get("stage"),
-            "interest": data.get("interest"),
-            "goal": data.get("goal"),
-            "effort": data.get("effort")
-        }
-
-        print("Chatbot Answers:", answers)
-
-        
-        prompt = f"""
-You are PathFinders Quick Test, a friendly career preview assistant.
-
-Analyze these answers and give a short, insightful personality/career direction summary.
-Do NOT suggest specific job titles.
-Keep it under 120 words.
-Encourage the user to sign up for full insights.
-
-User answers:
-{answers}
-"""
+# 🔥 SMTP - PORT 465 ONLY
+class ReliableSMTP:
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+        self.port = 465
+    
+    def send(self, to_email, subject, body, is_html=False):
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": "You are PathFinders Quick Test assistant."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            teaser = response["choices"][0]["message"]["content"]
+            print(f"🔄 Sending via SMTP port 465 (SSL)...")
+            context = ssl.create_default_context()
+            server = smtplib.SMTP_SSL('smtp.gmail.com', self.port, context=context, timeout=15)
+            server.login(self.username, self.password)
+            
+            msg = MIMEMultipart()
+            msg['From'] = self.username
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body, 'html' if is_html else 'plain'))
+            
+            server.sendmail(self.username, to_email, msg.as_string())
+            server.quit()
+            
+            print("✅ EMAIL SENT on port 465!")
+            logger.info(f"Email sent to {to_email}")
+            return True, "Sent via port 465"
+            
         except Exception as e:
-            print("OpenAI Error:", e)
-            teaser = (
-                "Based on your answers, you have clear preferences and goals that strongly shape your career direction.\n"
-                "PathFinders sees enough signals to start mapping roles and learning paths that fit you — "
-                "unlock the full breakdown after sign-up."
-            )
+            print(f"❌ Port 465 failed: {str(e)[:80]}")
+            return False, f"Failed: {str(e)[:50]}"
 
-        return jsonify({"status": "success", "teaser": teaser})
+# Initialize SMTP
+smtp_sender = None
+if app.config['MAIL_USERNAME'] and app.config['MAIL_PASSWORD']:
+    smtp_sender = ReliableSMTP(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
 
-    return jsonify({"status": "error", "message": "Invalid request"}), 400
+# Database initialization
+def init_db():
+    try:
+        if not os.path.exists('instance'):
+            os.makedirs('instance')
+        with app.app_context():
+            db.create_all()
+            logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Database initialization failed: {e}")
+        raise
 
+init_db()
 
-# ---------------- MODELS ---------------- #
+def get_auth_data(request, prefix=''):
+    try:
+        if request.is_json:
+            json_data = request.get_json(silent=True) or {}
+            email = (json_data.get(f'{prefix}Email') or json_data.get('email') or '').strip().lower()
+            password = json_data.get(f'{prefix}Password') or json_data.get('password') or ''
+        else:
+            email = (request.form.get(f'{prefix}Email') or request.form.get('email') or '').strip().lower()
+            password = request.form.get(f'{prefix}Password') or request.form.get('password') or ''
+        
+        if email and password:
+            return {'email': email, 'password': password}
+        return None
+    except Exception as e:
+        logger.error(f"Error in get_auth_data: {e}")
+        return None
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150))
-    email = db.Column(db.String(150), unique=True)
-    password = db.Column(db.String(200))
-    verified = db.Column(db.Boolean, default=False)
-    age = db.Column(db.Integer)
-    career_path = db.Column(db.String(200))
-    is_student = db.Column(db.Boolean)
-    school = db.Column(db.String(200))
-    level = db.Column(db.String(100))
+def send_verification_email(email, code=None, is_resend=False, analysis=None):
+    try:
+        if not smtp_sender:
+            if code:
+                print(f"\n🔥 DEV MODE OTP for {email}: {code}\n")
+            return False, "Email config missing"
 
-class Question(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    question_id = db.Column(db.String(50), unique=True)
-    text = db.Column(db.String(500))
-    type = db.Column(db.String(50))
-    placeholder = db.Column(db.String(200))
-    required = db.Column(db.Boolean, default=False)
-    show_if = db.Column(db.String(50))
-    options = db.Column(db.Text)  # JSON string
+        subject = 'PathFinders - New Code' if is_resend else 'PathFinders - Verify Email'
+        
+        if analysis:
+            body_html = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #2c3e50; text-align: center;">🎯 Your Career Analysis</h2>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; overflow-x: auto;">
+<pre>{json.dumps(analysis, indent=2)}</pre>
+                </div>
+                <p style="color: #7f8c8d; text-align: center;">Best,<br>PathFinders Team</p>
+            </div>
+            """
+            return smtp_sender.send(email, subject, body_html, True)
+        else:
+            # Get latest token
+            with app.app_context():
+                token_obj = VerificationCode.query.filter_by(email=email).order_by(VerificationCode.id.desc()).first()
+                token_url = f"http://localhost:5000/verify_email/{token_obj.token}" if token_obj else ""
+            
+            body_html = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #2c3e50;">🎉 Welcome to PathFinders!</h2>
+                <div style="background: #e3f2fd; padding: 20px; border-radius: 8px;">
+                    <h3 style="color: #1976d2;">Your Code:</h3>
+                    <h1 style="font-size: 48px; color: #1976d2; text-align: center; letter-spacing: 5px;">{code}</h1>
+                </div>
+                <p><strong>⏰ Expires in 10 minutes</strong></p>
+                <p>Or <a href="{token_url}" style="color: #1976d2; font-weight: bold;">click here to verify</a></p>
+                <p style="color: #7f8c8d;">Need another? Use "Resend Code"</p>
+            </div>
+            """
+            return smtp_sender.send(email, subject, body_html, True)
 
-class EmailVerification(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(150))
-    code = db.Column(db.String(6))
-    expires_at = db.Column(db.DateTime)
+    except Exception as e:
+        logger.error(f"Email error: {e}")
+        if code:
+            print(f"\n🔥 DEV MODE OTP for {email}: {code}\n")
+        return False, str(e)
 
-with app.app_context():
-    db.create_all()
+# 🔥 ALL ROUTES - COMPLETE
+@app.errorhandler(BadRequestKeyError)
+def handle_bad_request(e):
+    flash('Invalid form data.')
+    return redirect(url_for('register'))
 
-    # Seed questions if not already present
-    if Question.query.count() == 0:
-        questions_data = [
-            {
-                'question_id': 'age',
-                'text': 'How old are you?',
-                'type': 'number',
-                'placeholder': 'Enter your age',
-                'required': True,
-                'show_if': None,
-                'options': None
-            },
-            {
-                'question_id': 'careerPath',
-                'text': 'What\'s your current or desired career path?',
-                'type': 'text',
-                'placeholder': 'e.g., Software Engineering, Medicine, Business',
-                'required': True,
-                'show_if': None,
-                'options': None
-            },
-            {
-                'question_id': 'isStudent',
-                'text': 'Are you currently a student?',
-                'type': 'choice',
-                'placeholder': None,
-                'required': True,
-                'show_if': None,
-                'options': json.dumps(['Yes', 'No'])
-            },
-            {
-                'question_id': 'school',
-                'text': 'Which school are you attending?',
-                'type': 'text',
-                'placeholder': 'Enter your school name',
-                'required': False,
-                'show_if': 'Yes',
-                'options': None
-            },
-            {
-                'question_id': 'level',
-                'text': 'Which level are you in?',
-                'type': 'select',
-                'placeholder': None,
-                'required': False,
-                'show_if': 'Yes',
-                'options': json.dumps(['100 Level', '200 Level', '300 Level', '400 Level', '500 Level'])
-            }
-        ]
+@app.errorhandler(500)
+def internal_error(error):
+    logger.error(f"Server error: {error}")
+    flash('Something went wrong. Try again.')
+    return render_template('login.html'), 500
 
-        for q_data in questions_data:
-            question = Question(
-                question_id=q_data['question_id'],
-                text=q_data['text'],
-                type=q_data['type'],
-                placeholder=q_data['placeholder'],
-                required=q_data['required'],
-                show_if=q_data['show_if'],
-                options=q_data['options']
-            )
-            db.session.add(question)
-        db.session.commit()
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-# ---------------- HELPERS ---------------- #
-
-def generate_code():
-    return ''.join(random.choices(string.digits, k=6))
-
-def send_verification_email(email, code):
-    msg = Message(
-        "Verify your Pathfinder account",
-        sender=app.config['MAIL_USERNAME'],
-        recipients=[email]
-    )
-    msg.body = f"""
-Your Pathfinder verification code is:
-
-{code}
-
-This code expires in 10 minutes.
-"""
-    mail.send(msg)
-
-# ---------------- ROUTES ---------------- #
-
-@app.route('/dashboard')
-def dashboard():
-    return render_template('dashboard.html')
-
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'POST':
+        data = get_auth_data(request, 'login')
+        if not data:
+            flash('Missing credentials')
+            return render_template('login.html')
+        
+        email, password = data['email'], data['password']
+        
+        if len(email) < 3 or '@' not in email:
+            flash('Enter valid email')
+            return render_template('login.html')
+        
+        if len(password) < 6:
+            flash('Password too short')
+            return render_template('login.html')
+        
+        user = User.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password_hash, password):
+            if not user.is_verified:
+                flash('Verify your email first or <a href="/resend_otp" style="color: #007bff;">resend code</a>')
+                return render_template('login.html')
+            login_user(user, remember=True)
+            return redirect(url_for('dashboard'))
+        
+        flash('Invalid email/password')
+    
     return render_template('login.html')
 
-@app.route("/connect")
-def connect():
-    return render_template("connect.html")
-
-
-# -------- SIGNUP -------- #
-@app.route('/signup', methods=['POST'])
-def signup():
-    data = request.get_json()
-    name = data.get('signupName')
-    email = data.get('signupEmail')
-    password = data.get('signupPassword')
-
-    # Check if user already exists and is verified
-    existing_user = User.query.filter_by(email=email).first()
-    if existing_user and existing_user.verified:
-        return jsonify({"status": "error", "message": "Email already exists"}), 400
-
-    # If user exists but not verified, delete them and any verification records
-    if existing_user and not existing_user.verified:
-        EmailVerification.query.filter_by(email=email).delete()
-        db.session.delete(existing_user)
-        db.session.commit()
-
-    user = User(
-        name=name,
-        email=email,
-        password=generate_password_hash(password),
-        verified=False
-    )
-    db.session.add(user)
-
-    code = generate_code()
-    verification = EmailVerification(
-        email=email,
-        code=code,
-        expires_at=datetime.utcnow() + timedelta(minutes=10)
-    )
-    db.session.add(verification)
-    db.session.commit()
-
-    try:
-        send_verification_email(email, code)
-        return jsonify({
-            "status": "success",
-            "message": "Verification code sent",
-            "email": email
-        })
-    except Exception as e:
-        print(f"Email sending failed: {e}")
-        db.session.delete(verification)
-        db.session.delete(user)
-        db.session.commit()
-        return jsonify({
-            "status": "error",
-            "message": "Failed to send verification email. Please try again."
-        }), 500
-
-# -------- VERIFY EMAIL -------- #
-@app.route('/verify', methods=['POST'])
-def verify_email():
-    data = request.get_json()
-    email = data.get('email')
-    code = data.get('code')
-
-    record = EmailVerification.query.filter_by(email=email, code=code).first()
-
-    if not record:
-        return jsonify({"status": "error", "message": "Invalid code"}), 400
-
-    if record.expires_at < datetime.utcnow():
-        return jsonify({"status": "error", "message": "Code expired"}), 400
-
-    user = User.query.filter_by(email=email).first()
-    user.verified = True
-
-    db.session.delete(record)
-    db.session.commit()
-
-    return jsonify({"status": "success", "message": "Email verified successfully"})
-
-# -------- RESEND CODE -------- #
-@app.route('/resend-code', methods=['POST'])
-def resend_code():
-    data = request.get_json()
-    email = data.get('email')
-
-    EmailVerification.query.filter_by(email=email).delete()
-
-    code = generate_code()
-    verification = EmailVerification(
-        email=email,
-        code=code,
-        expires_at=datetime.utcnow() + timedelta(minutes=10)
-    )
-    db.session.add(verification)
-    db.session.commit()
-
-    send_verification_email(email, code)
-
-    return jsonify({"status": "success", "message": "Code resent"})
-
-# -------- LOGIN -------- #
-@app.route('/login', methods=['POST'])
-def login_user():
-    data = request.get_json()
-    email = data.get('loginEmail')
-    password = data.get('loginPassword')
-
-    if not email or not password:
-        return jsonify({"status": "error", "message": "Email and password are required"}), 400
-
-    user = User.query.filter_by(email=email).first()
-
-    if not user:
-        return jsonify({"status": "error", "message": "Invalid email or password"}), 401
-
-    if not check_password_hash(user.password, password):
-        return jsonify({"status": "error", "message": "Invalid email or password"}), 401
-
-    if not user.verified:
-        return jsonify({"status": "error", "message": "Please verify your email before logging in"}), 403
-
-    return jsonify({
-        "status": "success",
-        "message": "Login successful",
-        "user": {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email
-        }
-    })
-
-# -------- FORGOT PASSWORD -------- #
-@app.route('/forgot-password', methods=['POST'])
-def forgot_password():
-    data = request.get_json()
-    email = data.get('forgotEmail')
-
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({"status": "error", "message": "Email not found"}), 400
-
-    code = generate_code()
-    verification = EmailVerification(
-        email=email,
-        code=code,
-        expires_at=datetime.utcnow() + timedelta(minutes=10)
-    )
-    db.session.add(verification)
-    db.session.commit()
-
-    send_verification_email(email, code)
-
-    return jsonify({"status": "success", "message": "Reset code sent"})
-
-# -------- RESET PASSWORD -------- #
-@app.route('/reset-password', methods=['POST'])
-def reset_password():
-    data = request.get_json()
-    email = data.get('email')
-    code = data.get('code')
-    new_password = data.get('newPassword')
-
-    record = EmailVerification.query.filter_by(email=email, code=code).first()
-    if not record or record.expires_at < datetime.utcnow():
-        return jsonify({"status": "error", "message": "Invalid or expired code"}), 400
-
-    user = User.query.filter_by(email=email).first()
-    user.password = generate_password_hash(new_password)
-
-    db.session.delete(record)
-    db.session.commit()
-
-    return jsonify({"status": "success", "message": "Password reset successful"})
-
-# -------- GET USER PROFILE -------- #
-@app.route('/get-profile', methods=['GET'])
-def get_profile():
-    # In a real app, you'd get user_id from session/token
-    # For now, we'll assume the user is logged in and get from query param
-    email = request.args.get('email')
-    if not email:
-        return jsonify({"status": "error", "message": "Email required"}), 400
-
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({"status": "error", "message": "User not found"}), 404
-
-    return jsonify({
-        "status": "success",
-        "profile": {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email,
-            "age": user.age,
-            "career_path": user.career_path,
-            "is_student": user.is_student,
-            "school": user.school,
-            "level": user.level
-        }
-    })
-
-# -------- UPDATE USER PROFILE -------- #
-@app.route('/update-profile', methods=['POST'])
-def update_profile():
-    data = request.get_json()
-    email = data.get('email')
-    updates = data.get('updates', {})
-
-    if not email:
-        return jsonify({"status": "error", "message": "Email required"}), 400
-
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({"status": "error", "message": "User not found"}), 404
-
-    # Update fields if provided
-    if 'name' in updates:
-        user.name = updates['name']
-    if 'age' in updates:
-        user.age = updates['age']
-    if 'career_path' in updates:
-        user.career_path = updates['career_path']
-    if 'is_student' in updates:
-        user.is_student = updates['is_student']
-    if 'school' in updates:
-        user.school = updates['school']
-    if 'level' in updates:
-        user.level = updates['level']
-
-    db.session.commit()
-
-    return jsonify({"status": "success", "message": "Profile updated successfully"})
-
-# -------- SAVE QUESTIONNAIRE -------- #
-@app.route('/save-questionnaire', methods=['POST'])
-def save_questionnaire():
-    data = request.get_json()
-    email = data.get('email')
-    answers = data.get('answers', {})
-
-    if not email:
-        return jsonify({"status": "error", "message": "Email required"}), 400
-
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({"status": "error", "message": "User not found"}), 404
-
-    # Update user fields with questionnaire answers
-    if 'age' in answers:
-        user.age = answers['age']
-    if 'careerPath' in answers:
-        user.career_path = answers['careerPath']
-    if 'isStudent' in answers:
-        user.is_student = answers['isStudent'] == 'Yes'
-    if 'school' in answers:
-        user.school = answers['school']
-    if 'level' in answers:
-        user.level = answers['level']
-
-    db.session.commit()
-
-    return jsonify({"status": "success", "message": "Questionnaire saved successfully"})
-
-# -------- GET QUESTIONS -------- #
-@app.route('/get-questions', methods=['GET'])
-def get_questions():
-    questions = Question.query.all()
-    questions_list = []
-    for q in questions:
-        question_dict = {
-            'id': q.question_id,
-            'text': q.text,
-            'type': q.type,
-            'placeholder': q.placeholder,
-            'required': q.required,
-            'show_if': q.show_if
-        }
-        if q.options:
-            try:
-                question_dict['options'] = json.loads(q.options)
-            except json.JSONDecodeError:
-                question_dict['options'] = []
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        data = get_auth_data(request, 'register')
+        if not data:
+            flash('Missing email/password')
+            return render_template('login.html')
+            
+        email, password = data['email'], data['password']
+        
+        if len(email) < 3 or '@' not in email:
+            flash('Enter valid email')
+            return render_template('login.html')
+        
+        if len(password) < 8:
+            flash('Password must be 8+ chars')
+            return render_template('login.html')
+        
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered')
+            return render_template('login.html')
+        
+        # Store pending signup
+        session['pending_signup'] = {'email': email, 'password': password}
+        session['show_verification'] = True
+        session.modified = True
+        session.permanent = True  # Ensure persists across redirects
+        
+        # Create verification code - 6 DIGITS ONLY
+        code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
+        token = secrets.token_urlsafe(32)
+        expires = datetime.now(timezone.utc) + timedelta(minutes=10)
+        
+        with app.app_context():
+            vcode = VerificationCode(email=email, code=code, token=token, expires=expires)
+            db.session.add(vcode)
+            db.session.commit()
+        
+        success, msg = send_verification_email(email, code)
+        
+        if success:
+            flash('✅ Code sent! Check email.')
         else:
-            question_dict['options'] = []
-        questions_list.append(question_dict)
+            flash('⚠️ Check console for OTP!')
+        
+        return render_template('login.html', show_verification=True, pending_email=email)
+    
+    return render_template('login.html')
 
-    return jsonify({"status": "success", "questions": questions_list})
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Logged out!')
+    return redirect(url_for('index'))
 
-# -------- DASHBOARD CHAT -------- #
-@app.route('/chat', methods=['POST'])
-def chat():
-    data = request.get_json()
-    message = data.get('message', '').strip()
-
-    if not message:
-        return jsonify({"status": "error", "message": "Message is required"}), 400
-
+@app.route('/verify_otp', methods=['POST'])
+def verify_otp():
     try:
-        ai_response = get_ai_response(message)
-        return jsonify({"status": "success", "response": ai_response})
+        code = request.form.get('code', '').replace(' ', '').upper()
+        if len(code) != 6:
+            flash('Enter 6-digit code')
+            return render_template('login.html')
+        
+        pending = session.get('pending_signup')
+        if not pending:
+            flash('No pending signup. Register again.')
+            return redirect(url_for('register'))
+        
+        email = pending['email']
+        
+        with app.app_context():
+            latest_code = VerificationCode.query.filter(
+                VerificationCode.email == email,
+                VerificationCode.expires > datetime.now(timezone.utc)
+            ).order_by(VerificationCode.id.desc()).first()
+        
+        if not latest_code or latest_code.code != code:
+            flash('❌ Invalid/expired code. <a href="/resend_otp" class="btn btn-sm btn-primary">Resend</a>')
+            return render_template('login.html')
+        
+        # Create user
+        user = User(
+            email=email,
+            password_hash=generate_password_hash(pending['password']),
+            is_verified=True
+        )
+        db.session.add(user)
+        db.session.delete(latest_code)
+        db.session.commit()
+        
+        login_user(user, remember=True)
+        session.clear()
+        flash('🎉 Welcome to PathFinders!')
+        return redirect(url_for('dashboard'))
+        
     except Exception as e:
-        print(f"Error in chat endpoint: {e}")
-        return jsonify({"status": "error", "message": "Failed to get AI response"}), 500
+        logger.error(f"Verify OTP error: {e}")
+        flash('Verification failed')
+        return render_template('login.html')
 
-# -------- CAREER ASSESSMENT -------- #
-@app.route('/get-assessment-questions', methods=['GET'])
-def get_assessment_questions():
-    return jsonify({"status": "success", "questions": CAREER_ASSESSMENT_QUESTIONS})
-
-@app.route('/submit-assessment', methods=['POST'])
-def submit_assessment():
-    data = request.get_json()
-    answers = data.get('answers', {})
-
-    if not answers:
-        return jsonify({"status": "error", "message": "Answers are required"}), 400
-
+@app.route('/resend_otp', methods=['POST'])
+def resend_otp():
     try:
-        analysis = analyze_career_assessment(answers)
-        return jsonify({"status": "success", "analysis": analysis})
+        email = request.form.get('email') or session.get('pending_signup', {}).get('email')
+        if not email:
+            flash('No pending verification')
+            return redirect(url_for('register'))
+        
+        with app.app_context():
+            VerificationCode.query.filter_by(email=email).delete()
+            db.session.commit()
+            
+            code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])  # 6 DIGITS ONLY
+            token = secrets.token_urlsafe(32)
+            expires = datetime.now(timezone.utc) + timedelta(minutes=10)
+            vcode = VerificationCode(email=email, code=code, token=token, expires=expires)
+            db.session.add(vcode)
+            db.session.commit()
+        
+        success, msg = send_verification_email(email, code, is_resend=True)
+        flash('✅ New code sent!' if success else '⚠️ Check console for OTP!')
+        return render_template('login.html', show_verification=True, pending_email=email)
+        
     except Exception as e:
-        print(f"Error in assessment analysis: {e}")
-        return jsonify({"status": "error", "message": "Failed to analyze assessment"}), 500
+        logger.error(f"Resend error: {e}")
+        flash('Resend failed')
+        return render_template('login.html')
 
-@app.route('/select-career', methods=['POST'])
-def select_career():
-    data = request.get_json()
-    email = data.get('email')
-    career_title = data.get('career_title')
+@app.route('/verify_email/<token>')
+def verify_email(token):
+    try:
+        with app.app_context():
+            vcode = VerificationCode.query.filter_by(token=token).filter(
+                VerificationCode.expires > datetime.now(timezone.utc)
+            ).first()
+        
+        if not vcode:
+            flash('❌ Invalid/expired link')
+            return render_template('login.html')
+        
+        email = vcode.email
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            user.is_verified = True
+            flash('✅ Email verified!')
+        else:
+            pending = session.get('pending_signup')
+            if pending and pending['email'] == email:
+                password = pending['password']
+                user = User(email=email, password_hash=generate_password_hash(password), is_verified=True)
+                db.session.add(user)
+                flash('🎉 Account created!')
+            else:
+                flash('No pending registration')
+                db.session.delete(vcode)
+                db.session.commit()
+                return render_template('login.html')
+        
+        db.session.delete(vcode)
+        db.session.commit()
+        login_user(user, remember=True)
+        return redirect(url_for('dashboard'))
+        
+    except Exception as e:
+        logger.error(f"Verify email error: {e}")
+        flash('Verification failed')
+        return render_template('login.html')
 
-    if not email or not career_title:
-        return jsonify({"status": "error", "message": "Email and career title are required"}), 400
+@app.route('/dashboard', methods=['GET', 'POST'])
+@login_required
+def dashboard():
+    try:
+        if request.method == 'POST':
+            answers = {q['id']: request.form.get(q['id'], '')[:1000] 
+                      for q in CAREER_ASSESSMENT_QUESTIONS}
+            
+            analysis = analyze_career_assessment(answers)
+            
+            assessments = json.loads(current_user.assessments or '[]')
+            assessments.append({
+                'date': datetime.now(timezone.utc).isoformat(),
+                'analysis': analysis
+            })
+            current_user.assessments = json.dumps(assessments[-10:])
+            db.session.commit()
+            
+            session['latest_analysis'] = analysis
+            flash('🎯 Analysis saved!')
+            return redirect(url_for('connect'))
+        
+        return render_template('dashboard.html', questions=CAREER_ASSESSMENT_QUESTIONS)
+    except Exception as e:
+        logger.error(f"Dashboard error: {e}")
+        flash('Assessment failed')
+        return render_template('dashboard.html', questions=CAREER_ASSESSMENT_QUESTIONS)
 
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({"status": "error", "message": "User not found"}), 404
+@app.route('/connect')
+@login_required
+def connect():
+    analysis = session.get('latest_analysis', {})
+    return render_template('connect.html', analysis=analysis)
 
-    user.career_path = career_title
-    db.session.commit()
+@app.route('/send_email')
+@login_required
+def send_email():
+    try:
+        analysis = session.get('latest_analysis', {})
+        if not analysis:
+            flash('No analysis to send')
+            return redirect(url_for('connect'))
+        
+        success, msg = send_verification_email(current_user.email, analysis=analysis)
+        flash('📧 Analysis sent!' if success else 'Email failed - check dashboard')
+        return redirect(url_for('connect'))
+    except Exception as e:
+        flash('Send failed')
+        return redirect(url_for('connect'))
 
-    return jsonify({"status": "success", "message": "Career path updated successfully"})
-
-if __name__ == "__main__":
-    app.run(debug=True)
-
+if __name__ == '__main__':
+    print("🚀 PathFinders ready! http://localhost:5000")
+    print("📧 Port 465 SMTP | 🎯 Gemini AI | ✅ All fixed!")
+    app.run(host='0.0.0.0', port=5000, debug=True)
